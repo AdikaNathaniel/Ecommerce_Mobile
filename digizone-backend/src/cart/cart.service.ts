@@ -1,46 +1,99 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { BadRequestException, Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
-import { Model, Types } from 'mongoose'; // We need to import Types for ObjectId
-import { Cart } from './cart.schema';
+import { Model } from 'mongoose';
+import { Cart, CartDocument } from 'src/shared/schema/cart.schema';
+import { AddToCartDto } from 'src/products/dto/add-to-cart.dto';
+import { UpdateCartDto } from 'src/products/dto/update-cart.dto'; // Import your new DTO
 
 @Injectable()
 export class CartService {
-  constructor(
-    @InjectModel('Cart') private readonly cartModel: Model<Cart>,
-  ) {}
+  constructor(@InjectModel(Cart.name) private cartDB: Model<CartDocument>) {}
 
-  // Add product to cart
-  async addToCart(productId: string): Promise<Cart> {
-    // Convert productId to ObjectId
-    const productObjectId = new Types.ObjectId(productId);
+  // ✅ Add to Cart (Prevents duplicate items)
+  async addToCart(addToCartDto: AddToCartDto) {
+    try {
+      const { productName, quantity } = addToCartDto;
 
-    // Check if product already exists in the cart
-    const existingProduct = await this.cartModel.findOne({ productId: productObjectId });
-    if (existingProduct) {
-      throw new Error('Product already in cart');
-    }
+      // Check if the product already exists in the cart
+      const existingCartItem = await this.cartDB.findOne({ productName });
 
-    const newProduct = new this.cartModel({
-      productId: productObjectId,
-      quantity: 1, // default quantity can be 1 when added to the cart
-    });
-    
-    return await newProduct.save();
-  }
+      if (existingCartItem) {
+        throw new BadRequestException('Product is already in the cart');
+      }
 
-  // Remove product from cart
-  async removeFromCart(productId: string): Promise<void> {
-    const productObjectId = new Types.ObjectId(productId);
+      // Add new product to cart
+      const newCartItem = new this.cartDB({
+        productName,
+        quantity,
+      });
 
-    const result = await this.cartModel.deleteOne({ productId: productObjectId });
+      await newCartItem.save();
 
-    if (result.deletedCount === 0) {
-      throw new NotFoundException(`Product with id ${productId} not found in cart`);
+      return {
+        message: 'Product added to cart successfully',
+        success: true,
+        result: newCartItem,
+      };
+    } catch (error) {
+      throw new BadRequestException(error.message);
     }
   }
 
-  // Get all products from the cart
-  async getAllProducts(): Promise<Cart[]> {
-    return await this.cartModel.find().exec();
+  // ✅ Remove from Cart
+  async removeFromCart(productName: string) {
+    try {
+      const deletedItem = await this.cartDB.findOneAndDelete({ productName });
+
+      if (!deletedItem) {
+        throw new BadRequestException('Product not found in the cart');
+      }
+
+      return {
+        message: 'Product removed from cart successfully',
+        success: true,
+      };
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  // ✅ Update Cart Item Quantity
+  async updateCartItem(updateCartDto: UpdateCartDto) {
+    try {
+      const { productName, quantity } = updateCartDto;
+
+      const updatedItem = await this.cartDB.findOneAndUpdate(
+        { productName },
+        { quantity },
+        { new: true } // Return the updated document
+      );
+
+      if (!updatedItem) {
+        throw new BadRequestException('Product not found in the cart');
+      }
+
+      return {
+        message: 'Cart item updated successfully',
+        success: true,
+        result: updatedItem,
+      };
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
+  }
+
+  // ✅ Get all Cart Items
+  async getCartItems() {
+    try {
+      const cartItems = await this.cartDB.find();
+
+      return {
+        message: 'Cart items retrieved successfully',
+        success: true,
+        result: cartItems,
+      };
+    } catch (error) {
+      throw new BadRequestException(error.message);
+    }
   }
 }

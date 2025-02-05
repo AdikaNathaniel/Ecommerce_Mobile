@@ -6,7 +6,7 @@ import { CartModule } from './cart/cart.module'; // Import CartModule here
 import config from  'config';
 import { UsersModule } from './users/users.module';
 import { ProductsModule } from './products/products.module';
-import { OrdersModule } from './orders/orders.module';
+import { OrderModule } from './orders/orders.module';
 
 @Module({
   imports: [
@@ -17,8 +17,8 @@ import { OrdersModule } from './orders/orders.module';
     }),
     UsersModule,
     ProductsModule,
-    OrdersModule,
-    CartModule, // Add CartModule to imports
+    OrderModule,
+    CartModule, 
   ],
   controllers: [AppController],
   providers: [AppService],

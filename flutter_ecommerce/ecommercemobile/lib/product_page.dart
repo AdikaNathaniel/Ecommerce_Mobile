@@ -65,107 +65,119 @@ class _ProductsPageState extends State<ProductsPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: Text('Products'),
+        backgroundColor: Colors.blue,
+        title: Container(
+          width: double.infinity,
+          child: Center(
+            child: Text(
+              'Products',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ),
       ),
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: DropdownButton<String>(
-                      hint: Text('Select Category'),
-                      value: _selectedCategory,
-                      onChanged: (String? newValue) {
-                        setState(() {
-                          _selectedCategory = newValue;
-                          _filterProducts(); // Filter products when category changes
-                        });
-                      },
-                      items: _categories.map<DropdownMenuItem<String>>((String category) {
-                        return DropdownMenuItem<String>(
-                          value: category,
-                          child: Text(category),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(16.0),
-                    child: TextField(
-                      controller: _searchController,
-                      onChanged: (query) {
-                        _filterProducts(); // Filter products on search
-                      },
-                      decoration: InputDecoration(
-                        labelText: 'Search Products',
-                        border: OutlineInputBorder(),
+      body: Container(
+        color: Colors.blue[50], // Set the background color
+        child: _isLoading
+            ? Center(child: CircularProgressIndicator())
+            : SingleChildScrollView(
+                child: Column(
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: DropdownButton<String>(
+                        hint: Text('Select Category'),
+                        value: _selectedCategory,
+                        onChanged: (String? newValue) {
+                          setState(() {
+                            _selectedCategory = newValue;
+                            _filterProducts(); // Filter products when category changes
+                          });
+                        },
+                        items: _categories.map<DropdownMenuItem<String>>((String category) {
+                          return DropdownMenuItem<String>(
+                            value: category,
+                            child: Text(category),
+                          );
+                        }).toList(),
                       ),
                     ),
-                  ),
-                  _filteredProducts.isEmpty
-                      ? Center(child: Text('No products available.'))
-                      : ListView.builder(
-                          itemCount: _filteredProducts.length,
-                          shrinkWrap: true, // Important to avoid overflow
-                          physics: NeverScrollableScrollPhysics(), // Prevent scrolling on ListView
-                          itemBuilder: (context, index) {
-                            final product = _filteredProducts[index];
-                            return GestureDetector(
-                              onTap: () {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => ProductDetailsPage(product: product), // Pass product details
-                                  ),
-                                );
-                              },
-                              child: Card(
-                                elevation: 4,
-                                margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                                child: Padding(
-                                  padding: const EdgeInsets.all(8.0),
-                                  child: Row(
-                                    children: [
-                                      ClipRRect(
-                                        borderRadius: BorderRadius.circular(8.0),
-                                        child: Image.network(
-                                          product.image,
-                                          height: 100,
-                                          width: 100,
-                                          fit: BoxFit.cover,
-                                          errorBuilder: (context, error, stackTrace) {
-                                            return Image.network(
-                                              'https://us.123rf.com/450wm/pavelstasevich/pavelstasevich1811/pavelstasevich181101027/112815900-no-image-available-icon-flat-vector.jpg?ver=6',
-                                              fit: BoxFit.cover,
-                                            );
-                                          },
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: TextField(
+                        controller: _searchController,
+                        onChanged: (query) {
+                          _filterProducts(); // Filter products on search
+                        },
+                        decoration: InputDecoration(
+                          labelText: 'Search Products',
+                          border: OutlineInputBorder(),
+                        ),
+                      ),
+                    ),
+                    _filteredProducts.isEmpty
+                        ? Center(child: Text('No products available.'))
+                        : ListView.builder(
+                            itemCount: _filteredProducts.length,
+                            shrinkWrap: true, // Important to avoid overflow
+                            physics: NeverScrollableScrollPhysics(), // Prevent scrolling on ListView
+                            itemBuilder: (context, index) {
+                              final product = _filteredProducts[index];
+                              return GestureDetector(
+                                onTap: () {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => ProductDetailsPage(product: product), // Pass product details
+                                    ),
+                                  );
+                                },
+                                child: Card(
+                                  elevation: 4,
+                                  margin: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                                  child: Padding(
+                                    padding: const EdgeInsets.all(8.0),
+                                    child: Row(
+                                      children: [
+                                        ClipRRect(
+                                          borderRadius: BorderRadius.circular(8.0),
+                                          child: Image.network(
+                                            product.image,
+                                            height: 100,
+                                            width: 100,
+                                            fit: BoxFit.cover,
+                                            errorBuilder: (context, error, stackTrace) {
+                                              return Image.network(
+                                                'https://us.123rf.com/450wm/pavelstasevich/pavelstasevich1811/pavelstasevich181101027/112815900-no-image-available-icon-flat-vector.jpg?ver=6',
+                                                fit: BoxFit.cover,
+                                              );
+                                            },
+                                          ),
                                         ),
-                                      ),
-                                      SizedBox(width: 16),
-                                      Expanded(
-                                        child: Column(
-                                          crossAxisAlignment: CrossAxisAlignment.start,
-                                          children: [
-                                            Text(product.productName, style: TextStyle(fontWeight: FontWeight.bold)),
-                                            SizedBox(height: 4),
-                                            Text('Platform: ${product.platformType}'),
-                                            SizedBox(height: 4),
-                                            Text('Category: ${product.category}'),
-                                          ],
+                                        SizedBox(width: 16),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment: CrossAxisAlignment.start,
+                                            children: [
+                                              Text(product.productName, style: TextStyle(fontWeight: FontWeight.bold)),
+                                              SizedBox(height: 4),
+                                              Text('Platform: ${product.platformType}'),
+                                              SizedBox(height: 4),
+                                              Text('Category: ${product.category}'),
+                                            ],
+                                          ),
                                         ),
-                                      ),
-                                    ],
+                                      ],
+                                    ),
                                   ),
                                 ),
-                              ),
-                            );
-                          },
-                        ),
-                ],
+                              );
+                            },
+                          ),
+                  ],
+                ),
               ),
-            ),
+      ),
     );
   }
 }

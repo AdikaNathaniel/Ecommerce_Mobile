@@ -1,41 +1,24 @@
-import { Controller, Get, Post, Body, Param, Headers, Req, Query, UseGuards, BadRequestException } from '@nestjs/common';
-// import { AuthGuard } from '../shared/middleware/auth.guard';
-import { RolesGuard } from '../shared/middleware/roles.guard'; 
-import { checkoutDtoArr } from './dto/checkout.dto';
-import { OrdersService } from './orders.service';
+import { Body, Controller, Get, Post, Put } from '@nestjs/common';
+import { OrderService } from 'src/orders/orders.service'
+import { CreateOrderDto } from './dto/create-order.dto';
+import { CancelOrderDto } from 'src/orders/dto/cancel-order.dto'
 
 @Controller('orders')
-@UseGuards( RolesGuard)  // Apply guards to all routes in controller
-export class OrdersController {
-  constructor(private readonly ordersService: OrdersService) {}
+export class OrderController {
+  constructor(private readonly orderService: OrderService) {}
+
+  @Post()
+  async createOrder(@Body() createOrderDto: CreateOrderDto) {
+    return await this.orderService.createOrder(createOrderDto);
+  }
+
+  @Put('cancel')
+  async cancelOrder(@Body() cancelOrderDto: CancelOrderDto) {
+    return await this.orderService.cancelOrder(cancelOrderDto);
+  }
 
   @Get()
-  async findAll(@Query('status') status: string, @Req() req: any) {
-    return await this.ordersService.findAll(status, req.user);
-  }
-
-  @Get(':id')
-  async findOne(@Param('id') id: string) {
-    return await this.ordersService.findOne(id);
-  }
-
-  @Post('/checkout')
-  async checkout(@Body() body: checkoutDtoArr, @Req() req: any) {
-    if (!body.checkoutDetails || !Array.isArray(body.checkoutDetails)) {
-      throw new BadRequestException('Invalid checkout details');
-    }
-    return await this.ordersService.checkout(body, req.user);
-  }
-
-  @Post('/webhook')
-  @UseGuards() // Clear guards for webhook
-  async webhook(
-    @Body() rawBody: Buffer,
-    @Headers('stripe-signature') sig: string,
-  ) {
-    if (!sig) {
-      throw new BadRequestException('Missing stripe signature');
-    }
-    return await this.ordersService.webhook(rawBody, sig);
+  async getAllOrders() {
+    return await this.orderService.getAllOrders();
   }
 }

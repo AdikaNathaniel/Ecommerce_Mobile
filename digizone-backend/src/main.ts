@@ -53,28 +53,26 @@ async function bootstrap() {
 
       app.use('/api/v1/orders/webhook', raw({ type: '*/*' }));
 
-      // CSRF protection disabled for testing
-      // Commenting out CSRF protection middleware for testing purpose
-      // const csrfProtection = csurf({
-      //   cookie: {
-      //     httpOnly: true,
-      //     secure: process.env.NODE_ENV === 'production',
-      //     sameSite: process.env.NODE_ENV === 'production' ? 'none' : 'lax'
-      //   }
-      // });
-
-      // Commenting out this part temporarily to disable CSRF
-      // app.use((req: Request, res: Response, next: NextFunction) => {
-      //   if (isPathIgnored(req.path)) {
-      //     return next();
-      //   } else {
-      //     return csrfProtection(req, res, next);
-      //   }
-      // });
-
       const prefix = process.env.API_PREFIX || 'api/v1';
       app.setGlobalPrefix(prefix);
       app.useGlobalInterceptors(new TransformationInterceptor());
+
+      // Print the routes
+      const server = app.getHttpAdapter().getInstance();
+
+      const routes = server._router.stack
+        .filter((r: any) => r.route) // only get the routes
+        .map((r: any) => {
+          return {
+            method: Object.keys(r.route.methods).map(method => method.toUpperCase()).join(', '),
+            path: r.route.path,
+          };
+        });
+
+      console.log('Registered Routes:');
+      routes.forEach(route => {
+        console.log(`${route.method} ${route.path}`);
+      });
 
       const port = process.env.PORT || 3100;
       await app.listen(port);
