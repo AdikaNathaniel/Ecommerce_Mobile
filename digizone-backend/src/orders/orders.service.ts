@@ -3,7 +3,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Order, OrderDocument } from 'src/shared/schema/order.schema';
 import { CreateOrderDto } from './dto/create-order.dto';
-import { CancelOrderDto } from  'src/orders/dto/cancel-order.dto'
+import { CancelOrderDto } from 'src/orders/dto/cancel-order.dto';
 
 @Injectable()
 export class OrderService {
@@ -34,12 +34,10 @@ export class OrderService {
   // ✅ Cancel an Order
   async cancelOrder(cancelOrderDto: CancelOrderDto) {
     try {
-      const { orderId } = cancelOrderDto;
+      const { productName } = cancelOrderDto;
 
-      const deletedOrder = await this.orderDB.findByIdAndUpdate(
-        orderId,
-        { status: 'Cancelled' },
-        { new: true } // Return the updated document
+      const deletedOrder = await this.orderDB.findOneAndDelete(
+        { productName }, // Find order by productName
       );
 
       if (!deletedOrder) {

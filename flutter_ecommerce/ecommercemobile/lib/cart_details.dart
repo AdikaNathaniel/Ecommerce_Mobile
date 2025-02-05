@@ -11,7 +11,6 @@ class MyCartPage extends StatefulWidget {
 
 class _MyCartPageState extends State<MyCartPage> {
   List<dynamic> cartItems = [];
-  List<dynamic> orders = []; // To hold the fetched orders
 
   @override
   void initState() {
@@ -52,6 +51,37 @@ class _MyCartPageState extends State<MyCartPage> {
         _showSnackbar("Order placed successfully!", Colors.green);
       } else {
         _showSnackbar("Failed to place order.", Colors.red);
+      }
+    } catch (error) {
+      _showSnackbar("Error connecting to server.", Colors.red);
+    }
+  }
+
+  // Function to cancel all orders based on cart items
+  Future<void> _cancelAllOrders() async {
+    if (cartItems.isEmpty) {
+      _showSnackbar("No items to cancel.", Colors.red);
+      return;
+    }
+
+    for (var item in cartItems) {
+      await _cancelOrder(item['productName']);
+    }
+  }
+
+  // Function to cancel an individual order
+  Future<void> _cancelOrder(String productName) async {
+    try {
+      final response = await http.put(
+        Uri.parse('http://localhost:3100/api/v1/orders/cancel'),
+        headers: {"Content-Type": "application/json"},
+        body: json.encode({'productName': productName}),
+      );
+
+      if (response.statusCode == 200) {
+        _showSnackbar("Order for $productName cancelled successfully!", Colors.green);
+      } else {
+        _showSnackbar("Failed to cancel order for $productName.", Colors.red);
       }
     } catch (error) {
       _showSnackbar("Error connecting to server.", Colors.red);
@@ -159,6 +189,14 @@ class _MyCartPageState extends State<MyCartPage> {
                     child: Text('View My Orders'),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.blue, // Button color
+                      padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: _cancelAllOrders, // Cancel all orders
+                    child: Text('Cancel All Orders'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red, // Button color
                       padding: EdgeInsets.symmetric(vertical: 15, horizontal: 30),
                     ),
                   ),
