@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart' as stripe;
+import 'orders_page.dart'; // Import OrdersPage
 
 class PaymentScreen extends StatefulWidget {
   final String clientSecret;
@@ -22,7 +23,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
         backgroundColor: Colors.blue,
         title: Center(
           child: Text(
-            'Payment',
+            'Payment Portal',
             style: TextStyle(color: Colors.white),
           ),
         ),
@@ -34,37 +35,55 @@ class _PaymentScreenState extends State<PaymentScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                'Payment Details',
-                style: TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
+              Center(
+                child: Text(
+                  'Payment Details',
+                  style: TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
                 ),
               ),
               SizedBox(height: 16),
-              Text(
-                'Email:',
-                style: TextStyle(fontSize: 16),
-              ),
-              Text(
-                widget.userEmail,
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+              // Row for Email
+              Row(
+                mainAxisAlignment: MainAxisAlignment.start,
+                children: [
+                  Text(
+                    'Email:',
+                    style: TextStyle(fontSize: 16),
+                  ),
+                  SizedBox(width: 8), // Space between label and email
+                  Text(
+                    widget.userEmail,
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
+                  ),
+                ],
               ),
               SizedBox(height: 20),
-              Text(
-                'Card Information',
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              SizedBox(height: 8),
-              Container(
-                height: 200,
-                child: stripe.CardField(
-                  onCardChanged: (details) {
-                    // Optional: handle card changes
-                  },
+              // Centered Card Information
+              Center(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    Text(
+                      'Card Information',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    SizedBox(height: 8),
+                    Container(
+                      height: 200,
+                      width: double.infinity, // Ensures it takes the full width
+                      child: stripe.CardField(
+                        onCardChanged: (details) {
+                          // Optional: handle card changes
+                        },
+                      ),
+                    ),
+                  ],
                 ),
               ),
               SizedBox(height: 20),
@@ -79,19 +98,44 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 ),
               ),
               SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _handlePayment,
-                child: Text(
-                  'Complete Payment',
-                  style: TextStyle(fontSize: 16),
-                ),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
+              // Row for buttons
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: _handlePayment,
+                      child: Text(
+                        'Complete Payment',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.blue,
+                        padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                    ),
                   ),
-                ),
+                  SizedBox(width: 16), // Space between buttons
+                  Expanded(
+                    child: ElevatedButton(
+                      onPressed: _cancelPayment,
+                      child: Text(
+                        'Cancel Payment',
+                        style: TextStyle(fontSize: 16),
+                      ),
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.red,
+                        padding: EdgeInsets.symmetric(horizontal: 40, vertical: 15),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(30),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
@@ -178,5 +222,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
         );
       },
     );
+  }
+
+  void _cancelPayment() {
+    // Simply pop the current screen to go back to the previous screen (OrdersPage)
+    Navigator.of(context).pop();
   }
 }
