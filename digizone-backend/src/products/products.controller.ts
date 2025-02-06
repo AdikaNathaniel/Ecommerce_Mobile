@@ -28,7 +28,7 @@ export class ProductsController {
 
   @Post()
   @HttpCode(201)
-  @Roles(userTypes.ADMIN)
+  @Roles(userTypes.ADMIN, userTypes.SELLER) // Allow both ADMIN and SELLER to create products
   async create(@Body() createProductDto: CreateProductDto) {
     return await this.productsService.createProduct(createProductDto);
   }
@@ -44,7 +44,7 @@ export class ProductsController {
   }
 
   @Patch(':id')
-  // @Roles(userTypes.ADMIN)
+  @Roles(userTypes.ADMIN, userTypes.SELLER) // Allow both ADMIN and SELLER to update products
   async update(
     @Param('id') id: string,
     @Body() updateProductDto: CreateProductDto,
@@ -53,12 +53,13 @@ export class ProductsController {
   }
 
   @Delete(':id')
+  @Roles(userTypes.ADMIN, userTypes.SELLER) // Allow both ADMIN and SELLER to remove products
   async remove(@Param('id') id: string) {
     return await this.productsService.removeProduct(id);
   }
 
   @Post('/:id/image')
-  @Roles(userTypes.ADMIN)
+  @Roles(userTypes.ADMIN) // Restrict image upload to ADMIN only
   @UseInterceptors(
     FileInterceptor('productImage', {
       dest: config.get('fileStoragePath'),

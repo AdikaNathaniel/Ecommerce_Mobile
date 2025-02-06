@@ -17,14 +17,18 @@ export class AuthMiddleware implements NestMiddleware {
   async use(req: Request | any, res: Response, next: NextFunction) {
     try {
       console.log('AuthMiddleware', req.headers);
-      
-      // If the route is public, allow access without authentication
+
+      // Allow access to specific public routes
       if (this.isPublicRoute(req.path, req.method) || this.isCsrfSkippedRoute(req.originalUrl)) {
         return next();
       }
 
       const token = req.cookies._digi_auth_token;
       if (!token) {
+        // Check if the user can access without a token
+        if (this.isRoleAllowedWithoutToken(req.path, req.method, req.user)) {
+          return next();
+        }
         throw new UnauthorizedException('Missing auth token');
       }
 
@@ -37,10 +41,32 @@ export class AuthMiddleware implements NestMiddleware {
       user.password = undefined;
       req.user = user;
 
+      // Check again if the user's role allows them to access without a token
+      if (this.isRoleAllowedWithoutToken(req.path, req.method, user)) {
+        return next();
+      }
+
       next();
     } catch (error) {
       throw new UnauthorizedException(error.message);
     }
+  }
+
+  private isRoleAllowedWithoutToken(path: string, method: string, user: any): boolean {
+    // Routes where certain roles can bypass authentication
+    const allowedRoutes = [
+      { path: '/api/v1/products', method: 'POST' }, // Allow product creation
+      { path: '/api/v1/products', method: 'DELETE' }, // Allow product deletion
+    ];
+
+    const isAllowedRoute = allowedRoutes.some(route => path === route.path && method === route.method);
+
+    // Allow only if the user exists and is either a Seller or an Admin
+    if (isAllowedRoute && user && (user.role === 'Seller' || user.role === 'Admin')) {
+      return true;
+    }
+
+    return false;
   }
 
   private isPublicRoute(path: string, method: string): boolean {
@@ -62,44 +88,22 @@ export class AuthMiddleware implements NestMiddleware {
       { path: '/api/v1/users', method: 'DELETE' },
 
       // Product routes
-      { path: '/api/v1/products', method: 'POST' },
-      { path: '/api/v1/products', method: 'GET' },
-      { path: '/api/v1/products/', method: 'GET' }, // single product
+      { path: '/api/v1/products', method: 'GET' }, // View all products
+      { path: '/api/v1/products/', method: 'GET' }, // View single product
       { path: '/api/v1/products/', method: 'PATCH' },
       { path: '/api/v1/products/', method: 'DELETE' },
-      { path: '/api/v1/products/', method: 'POST' }, // for image upload
-      
-      // SKU routes
-      { path: '/api/v1/products/', method: 'POST' }, // for SKUs
-      { path: '/api/v1/products/', method: 'PUT' }, // update SKU
-      { path: '/api/v1/products/', method: 'DELETE' }, // delete SKU
-
-      // License routes
-      { path: '/api/v1/products/', method: 'POST' }, // for licenses
-      { path: '/api/v1/products/licenses/', method: 'DELETE' },
-      { path: '/api/v1/products/', method: 'GET' }, // get licenses
-      { path: '/api/v1/products/', method: 'PUT' }, // update license
-
-      // Review routes
-      { path: '/api/v1/products/', method: 'POST' }, // for reviews
-      { path: '/api/v1/products/', method: 'DELETE' }, // delete review
 
       // Order routes
-      // { path: '/api/v1/orders', method: 'GET' },
-      // { path: '/api/v1/orders/', method: 'GET' },
-      // { path: '/api/v1/orders/checkout', method: 'POST' },
       { path: '/api/v1/orders/webhook', method: 'POST' }
     ];
 
     return publicRoutes.some(route => {
-      // Handle both exact matches and routes with parameters
       const pathMatch = path.startsWith(route.path);
       return pathMatch && method === route.method;
     });
   }
 
   private isCsrfSkippedRoute(url: string): boolean {
-    // Define conditions to skip CSRF check for specific routes
     return url.includes('/orders/webhook');
   }
 }

@@ -12,6 +12,7 @@ export enum platformType {
   linux = 'Linux',
   android = 'Android',
   ios = 'iOS',
+  ubuntu = 'Ubuntu',
 }
 
 export enum baseType {

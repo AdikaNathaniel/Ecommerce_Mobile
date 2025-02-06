@@ -20,7 +20,7 @@ export class Users extends Document {
   @Prop({ required: true })
   password: string;
 
-  @Prop({ required: true, enum: [userTypes.ADMIN, userTypes.CUSTOMER] })
+  @Prop({ required: true, enum: [userTypes.ADMIN, userTypes.CUSTOMER,userTypes.SELLER] })
   type: string;
 
   @Prop({ default: false })

@@ -13,18 +13,16 @@ export class RolesGuard implements CanActivate {
       [context.getHandler(), context.getClass()],
     );
 
-    // Handle empty requiredRoles array
-    if (!requiredRoles || requiredRoles.length === 0) { 
-      // Allow access by default or implement your desired logic
+    // Allow access if no roles are required
+    if (!requiredRoles || requiredRoles.length === 0) {
       return true; 
     }
 
     const { user } = await context.switchToHttp().getRequest();
     if (!user || !user.type) {
-      // Handle cases where user or user.type is undefined
-      return false; 
+      return false; // Deny access if user is not present
     }
 
-    return requiredRoles.some((role) => user.type.includes(role));
+    return requiredRoles.some(role => user.type.includes(role));
   }
 }

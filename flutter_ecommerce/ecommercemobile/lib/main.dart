@@ -3,6 +3,7 @@ import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'product_page.dart';
+import 'register_page.dart'; // Import RegisterPage
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -22,6 +23,9 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: LoginPage(),
+      routes: {
+        '/register': (context) => RegisterPage(), // Define the route for RegisterPage
+      },
       debugShowCheckedModeBanner: false,
     );
   }
@@ -35,6 +39,7 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  final _typeController = TextEditingController();
   bool _isLoading = false;
 
   Future<void> _login() async {
@@ -153,6 +158,23 @@ class _LoginPageState extends State<LoginPage> {
               ),
               obscureText: true,
             ),
+              SizedBox(height: 15),
+              TextField(
+              controller: _typeController,
+              decoration: InputDecoration(
+                labelText: 'User Type',
+                labelStyle: TextStyle(color: Colors.blue),
+                prefixIcon: Icon(Icons.person_outline, color: Colors.blue), // User type icon
+                enabledBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.blue),
+                ),
+                focusedBorder: OutlineInputBorder(
+                  borderSide: BorderSide(color: Colors.blueAccent),
+                ),
+                filled: true,
+                fillColor: Colors.white,
+              ),
+            ),
             SizedBox(height: 20),
             _isLoading
                 ? CircularProgressIndicator()
@@ -174,7 +196,7 @@ class _LoginPageState extends State<LoginPage> {
                 Text("Don't have an account? "),
                 GestureDetector(
                   onTap: () {
-                    Navigator.pushNamed(context, '/register');
+                    Navigator.pushNamed(context, '/register'); // Navigate to RegisterPage
                   },
                   child: Text(
                     "Create Account",

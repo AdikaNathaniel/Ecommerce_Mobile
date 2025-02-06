@@ -2,6 +2,7 @@ import {
     IsArray,
     IsEnum,
     IsNotEmpty,
+    IsNumber,
     IsOptional,
     IsString,
   } from 'class-validator';
@@ -20,6 +21,9 @@ import {
     @IsString()
     @IsNotEmpty()
     description: string;
+
+    @IsNumber()
+    price: number;
   
     @IsOptional()
     image?: string;
