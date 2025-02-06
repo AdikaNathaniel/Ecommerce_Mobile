@@ -6,9 +6,10 @@ import 'cart_details.dart'; // Import the CartDetailsPage
 
 class ProductDetailsPage extends StatelessWidget {
   final Product product;
+  final String userEmail; // Add userEmail parameter
   bool isInCart = false; // Track if the product is in the cart
 
-  ProductDetailsPage({required this.product});
+  ProductDetailsPage({required this.product, required this.userEmail}); // Update constructor
 
   // Function to add product to cart
   Future<void> _addToCart(BuildContext context) async {
@@ -240,7 +241,9 @@ class ProductDetailsPage extends StatelessWidget {
                       onPressed: () {
                         Navigator.push(
                           context,
-                          MaterialPageRoute(builder: (context) => MyCartPage()),
+                          MaterialPageRoute(
+                            builder: (context) => MyCartPage(userEmail: userEmail), // Pass userEmail
+                          ),
                         );
                       },
                       child: Text('View My Cart'),

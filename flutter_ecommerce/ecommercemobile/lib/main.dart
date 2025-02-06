@@ -2,11 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'product_page.dart'; // Import the ProductsPage
+import 'product_page.dart';
 
-void main() {
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  
   // Initialize Stripe with your publishable key
   Stripe.publishableKey = 'pk_test_51Ql8Us4GUh5P0VNWFj1S5Fk5aP2hN9YE0pXPqvdV7IvmkLQurgeYB7lfO2m31qLnVjy7HFSz21HsuRK5ecrSSgu700Bt9em69W';
+  
   runApp(MyApp());
 }
 
@@ -38,7 +41,6 @@ class _LoginPageState extends State<LoginPage> {
     final email = _emailController.text;
     final password = _passwordController.text;
 
-    // Validate fields
     if (email.isEmpty || password.isEmpty) {
       _showSnackbar("Email and Password are required!", Colors.red);
       return;
@@ -62,11 +64,10 @@ class _LoginPageState extends State<LoginPage> {
 
       if (response.statusCode == 200 && responseData['success']) {
         _showSnackbar("Login successful", Colors.green);
-        // Navigate to the products page with email
         Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => ProductsPage(userEmail: email), // Pass the email
+            builder: (context) => ProductsPage(userEmail: email),
           ),
         );
       } else {

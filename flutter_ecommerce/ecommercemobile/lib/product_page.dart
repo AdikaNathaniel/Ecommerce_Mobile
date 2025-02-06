@@ -138,7 +138,10 @@ class _ProductsPageState extends State<ProductsPage> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => ProductDetailsPage(product: product), // Pass product details
+                                      builder: (context) => ProductDetailsPage(
+                                        product: product,
+                                        userEmail: widget.userEmail, // Pass userEmail
+                                      ), // Pass product details and userEmail
                                     ),
                                   );
                                 },

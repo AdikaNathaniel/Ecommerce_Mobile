@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'cart_details.dart'; // Ensure this is the correct import for CartDetailsPage
 import 'orders_page.dart'; // Import the OrdersPage here
 
 class MyCartPage extends StatefulWidget {
+  final String userEmail; // Add userEmail parameter
+
+  MyCartPage({required this.userEmail}); // Update constructor to accept userEmail
+
   @override
   _MyCartPageState createState() => _MyCartPageState();
 }
@@ -97,7 +100,7 @@ class _MyCartPageState extends State<MyCartPage> {
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => OrdersPage(orders: data['result']), // Pass orders to OrdersPage
+            builder: (context) => OrdersPage(orders: data['result'], userEmail: widget.userEmail), // Pass userEmail to OrdersPage
           ),
         );
       } else {
