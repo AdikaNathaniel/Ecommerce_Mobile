@@ -5,6 +5,10 @@ import 'product.dart';
 import 'product_details_page.dart';
 
 class ProductsPage extends StatefulWidget {
+  final String userEmail; // Add userEmail parameter
+
+  ProductsPage({required this.userEmail}); // Update the constructor
+
   @override
   _ProductsPageState createState() => _ProductsPageState();
 }
@@ -55,8 +59,14 @@ class _ProductsPageState extends State<ProductsPage> {
     setState(() {
       _filteredProducts = _products.where((product) {
         // Filter based on the selected category
-        bool matchesCategory = _selectedCategory == null || _selectedCategory == "All" || product.category == _selectedCategory;
-        return matchesCategory;
+        bool matchesCategory = _selectedCategory == null ||
+            _selectedCategory == "All" ||
+            product.category == _selectedCategory;
+
+        // Filter based on search query
+        bool matchesSearch = product.productName.toLowerCase().contains(_searchController.text.toLowerCase());
+
+        return matchesCategory && matchesSearch; // Return products that match both filters
       }).toList();
     });
   }

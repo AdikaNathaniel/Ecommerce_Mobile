@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'product_page.dart'; // Import the products page
-import 'product.dart';
-import 'register_page.dart'; // Import the register page
+import 'product_page.dart'; // Import the ProductsPage
 
-void main() => runApp(MyApp());
+void main() {
+  // Initialize Stripe with your publishable key
+  Stripe.publishableKey = 'pk_test_51Ql8Us4GUh5P0VNWFj1S5Fk5aP2hN9YE0pXPqvdV7IvmkLQurgeYB7lfO2m31qLnVjy7HFSz21HsuRK5ecrSSgu700Bt9em69W';
+  runApp(MyApp());
+}
 
 class MyApp extends StatelessWidget {
   @override
@@ -16,9 +19,6 @@ class MyApp extends StatelessWidget {
         primarySwatch: Colors.blue,
       ),
       home: LoginPage(),
-      routes: {
-        '/register': (context) => RegisterPage(),  // Register page route
-      },
       debugShowCheckedModeBanner: false,
     );
   }
@@ -34,7 +34,6 @@ class _LoginPageState extends State<LoginPage> {
   final _passwordController = TextEditingController();
   bool _isLoading = false;
 
-  // Function to handle login
   Future<void> _login() async {
     final email = _emailController.text;
     final password = _passwordController.text;
@@ -63,10 +62,12 @@ class _LoginPageState extends State<LoginPage> {
 
       if (response.statusCode == 200 && responseData['success']) {
         _showSnackbar("Login successful", Colors.green);
-        // Navigate to the products page
+        // Navigate to the products page with email
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => ProductsPage()),
+          MaterialPageRoute(
+            builder: (context) => ProductsPage(userEmail: email), // Pass the email
+          ),
         );
       } else {
         _showSnackbar(responseData['message'] ?? "Wrong credentials.", Colors.red);
@@ -80,7 +81,6 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  // Show snackbar messages
   void _showSnackbar(String message, Color color) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
@@ -117,8 +117,6 @@ class _LoginPageState extends State<LoginPage> {
               color: Colors.blue,
             ),
             SizedBox(height: 30),
-
-            // Email input field with icon
             TextField(
               controller: _emailController,
               decoration: InputDecoration(
@@ -137,8 +135,6 @@ class _LoginPageState extends State<LoginPage> {
               keyboardType: TextInputType.emailAddress,
             ),
             SizedBox(height: 15),
-
-            // Password input field with icon
             TextField(
               controller: _passwordController,
               decoration: InputDecoration(
@@ -157,7 +153,6 @@ class _LoginPageState extends State<LoginPage> {
               obscureText: true,
             ),
             SizedBox(height: 20),
-
             _isLoading
                 ? CircularProgressIndicator()
                 : ElevatedButton(
@@ -172,7 +167,6 @@ class _LoginPageState extends State<LoginPage> {
                     ),
                   ),
             SizedBox(height: 20),
-
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
