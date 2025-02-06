@@ -12,6 +12,9 @@ class PaymentScreen extends StatefulWidget {
 }
 
 class _PaymentScreenState extends State<PaymentScreen> {
+  String paymentStatus = 'Pending'; // Initial payment status
+  bool isPaymentSuccessful = false; // Flag to control dialog display
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -65,6 +68,17 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 ),
               ),
               SizedBox(height: 20),
+              Text(
+                'Payment Status: $paymentStatus', // Show current status
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: paymentStatus == 'Pending'
+                      ? Colors.orange
+                      : Colors.green,
+                ),
+              ),
+              SizedBox(height: 20),
               ElevatedButton(
                 onPressed: _handlePayment,
                 child: Text(
@@ -88,6 +102,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
 
   Future<void> _handlePayment() async {
     try {
+      setState(() {
+        paymentStatus = 'Pending'; // Set status to pending when starting payment
+      });
+
       // Create payment method params
       final params = stripe.PaymentMethodParams.card(
         paymentMethodData: stripe.PaymentMethodData(
@@ -104,16 +122,19 @@ class _PaymentScreenState extends State<PaymentScreen> {
       );
 
       if (paymentIntent.status == stripe.PaymentIntentsStatus.Succeeded) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Payment successful!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-        Navigator.of(context).pop(true);
+        setState(() {
+          paymentStatus = 'Success'; // Update status to success
+          isPaymentSuccessful = true; // Trigger success dialog
+        });
+
+        // Show success dialog
+        _showPaymentSuccessDialog();
       }
     } catch (e) {
       print('Payment error: $e'); // Debugging
+      setState(() {
+        paymentStatus = 'Failed'; // Update status to failed
+      });
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Payment failed: ${e.toString()}'),
@@ -121,5 +142,41 @@ class _PaymentScreenState extends State<PaymentScreen> {
         ),
       );
     }
+  }
+
+  void _showPaymentSuccessDialog() {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(15),
+          ),
+          title: Icon(
+            Icons.check_circle,
+            color: Colors.green,
+            size: 80,
+          ),
+          content: Text(
+            'Payment Successful!',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              fontSize: 18,
+              fontWeight: FontWeight.bold,
+              color: Colors.green,
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop();
+                Navigator.of(context).pop(true); // Close the screen after success
+              },
+              child: Text('OK'),
+            ),
+          ],
+        );
+      },
+    );
   }
 }
