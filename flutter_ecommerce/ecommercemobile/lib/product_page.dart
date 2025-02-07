@@ -3,11 +3,12 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'product.dart';
 import 'product_details_page.dart';
+import 'summary_page.dart';
 
 class ProductsPage extends StatefulWidget {
-  final String userEmail; // Add userEmail parameter
+  final String userEmail;
 
-  ProductsPage({required this.userEmail}); // Update the constructor
+  ProductsPage({required this.userEmail});
 
   @override
   _ProductsPageState createState() => _ProductsPageState();
@@ -19,8 +20,8 @@ class _ProductsPageState extends State<ProductsPage> {
   TextEditingController _searchController = TextEditingController();
   bool _isLoading = true;
 
-  String? _selectedCategory; // To keep track of the selected category
-  List<String> _categories = ["All", "Application Software", "Operating System"]; // Added "All" category
+  String? _selectedCategory;
+  List<String> _categories = ["All", "Application Software", "Operating System"];
 
   @override
   void initState() {
@@ -38,7 +39,7 @@ class _ProductsPageState extends State<ProductsPage> {
 
         setState(() {
           _products = productsData.map((json) => Product.fromJson(json)).toList();
-          _filteredProducts = _products; // Initialize filtered products
+          _filteredProducts = _products;
           _isLoading = false;
         });
       } else {
@@ -58,18 +59,29 @@ class _ProductsPageState extends State<ProductsPage> {
   void _filterProducts() {
     setState(() {
       _filteredProducts = _products.where((product) {
-        // Filter based on the selected category
         bool matchesCategory = _selectedCategory == null ||
             _selectedCategory == "All" ||
             product.category == _selectedCategory;
 
-        // Filter based on search query
         bool matchesSearch = product.productName.toLowerCase().contains(_searchController.text.toLowerCase());
 
-        return matchesCategory && matchesSearch; // Return products that match both filters
+        return matchesCategory && matchesSearch;
       }).toList();
     });
   }
+
+  // void _navigateToSummary() {
+  //   Navigator.push(
+  //     context,
+  //     MaterialPageRoute(
+  //       builder: (context) => SummaryPage(
+  //         totalProducts: _products.length,
+  //         totalItemsInCart: 0, // This can be updated with actual cart count
+  //         totalOrders: 0, // This can be updated with actual orders count
+  //       ),
+  //     ),
+  //   );
+  // }
 
   @override
   Widget build(BuildContext context) {
@@ -85,9 +97,15 @@ class _ProductsPageState extends State<ProductsPage> {
             ),
           ),
         ),
+        // actions: [
+        //   IconButton(
+        //     icon: Icon(Icons.summarize, color: Colors.white),
+        //     onPressed: _navigateToSummary,
+        //   ),
+        // ],
       ),
       body: Container(
-        color: Colors.blue[50], // Set the background color
+        color: Colors.blue[50],
         child: _isLoading
             ? Center(child: CircularProgressIndicator())
             : SingleChildScrollView(
@@ -101,7 +119,7 @@ class _ProductsPageState extends State<ProductsPage> {
                         onChanged: (String? newValue) {
                           setState(() {
                             _selectedCategory = newValue;
-                            _filterProducts(); // Filter products when category changes
+                            _filterProducts();
                           });
                         },
                         items: _categories.map<DropdownMenuItem<String>>((String category) {
@@ -117,7 +135,7 @@ class _ProductsPageState extends State<ProductsPage> {
                       child: TextField(
                         controller: _searchController,
                         onChanged: (query) {
-                          _filterProducts(); // Filter products on search
+                          _filterProducts();
                         },
                         decoration: InputDecoration(
                           labelText: 'Search Products',
@@ -129,8 +147,8 @@ class _ProductsPageState extends State<ProductsPage> {
                         ? Center(child: Text('No products available.'))
                         : ListView.builder(
                             itemCount: _filteredProducts.length,
-                            shrinkWrap: true, // Important to avoid overflow
-                            physics: NeverScrollableScrollPhysics(), // Prevent scrolling on ListView
+                            shrinkWrap: true,
+                            physics: NeverScrollableScrollPhysics(),
                             itemBuilder: (context, index) {
                               final product = _filteredProducts[index];
                               return GestureDetector(
@@ -140,8 +158,8 @@ class _ProductsPageState extends State<ProductsPage> {
                                     MaterialPageRoute(
                                       builder: (context) => ProductDetailsPage(
                                         product: product,
-                                        userEmail: widget.userEmail, // Pass userEmail
-                                      ), // Pass product details and userEmail
+                                        userEmail: widget.userEmail,
+                                      ),
                                     ),
                                   );
                                 },

@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart' as stripe;
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'payment_screen.dart'; // Import the PaymentScreen
 
 class OrdersPage extends StatelessWidget {
   final List<dynamic> orders;
@@ -15,10 +14,13 @@ class OrdersPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blue,
-        title: Center(
-          child: Text(
-            'My Orders',
-            style: TextStyle(color: Colors.white),
+        title: Container(
+          width: double.infinity,
+          child: Center(
+            child: Text(
+              'My Orders',
+              style: TextStyle(color: Colors.white),
+            ),
           ),
         ),
       ),
@@ -88,12 +90,21 @@ class OrdersPage extends StatelessWidget {
   }
 
   Future<void> _payWithStripe(BuildContext context) async {
+    // Calculate total amount from orders
     int totalAmount = 0;
     for (var order in orders) {
-      totalAmount += (order['quantity'] as int) * 1000; // Convert to cents
+      totalAmount += (order['quantity'] as int) * 1000; // Converting to cents
     }
 
     try {
+      // Show loading indicator
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Creating payment intent...'),
+          duration: Duration(seconds: 1),
+        ),
+      );
+
       // Call your backend to create a payment intent
       final response = await http.post(
         Uri.parse('http://localhost:3100/api/v1/stripe/payment-intent'),
@@ -104,25 +115,53 @@ class OrdersPage extends StatelessWidget {
         }),
       );
 
+      // Check for successful payment intent creation (201 status)
       if (response.statusCode == 201) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Payment intent created successfully! (Status: 201)'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
+          ),
+        );
+
         final responseData = json.decode(response.body);
         final clientSecret = responseData['client_secret'];
 
-        // Navigate to PaymentScreen with clientSecret
-        Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => PaymentScreen(clientSecret: clientSecret, userEmail: userEmail),
+        if (clientSecret == null) {
+          throw Exception('Client secret not found in response');
+        }
+
+        // Confirm the payment with Stripe
+        await stripe.Stripe.instance.confirmPayment(
+          paymentIntentClientSecret: clientSecret,
+          data: stripe.PaymentMethodParams.card(
+            paymentMethodData: stripe.PaymentMethodData(
+              billingDetails: stripe.BillingDetails(
+                email: userEmail,
+              ),
+            ),
+          ),
+        );
+
+        // Show final success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Payment processed successfully!'),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 3),
           ),
         );
       } else {
         throw Exception('Failed to create payment intent: ${response.statusCode}');
       }
     } catch (error) {
+      print('Payment error: $error'); // For debugging
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Payment failed: ${error.toString()}'),
           backgroundColor: Colors.red,
+          duration: Duration(seconds: 5),
         ),
       );
     }

@@ -2,11 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'product_page.dart';
 import 'register_page.dart'; // Import RegisterPage
-import 'product_page.dart'; // Import ProductsPage
 import 'add_product.dart'; // Import AddProductPage
 import 'user_screen.dart'; // Import UserListScreen
+import 'summary_page.dart'; // Import SummaryPage
+import 'product_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -75,7 +75,7 @@ class _LoginPageState extends State<LoginPage> {
         _showSnackbar("Login successful", Colors.green);
         
         if (userType.toLowerCase() == 'seller') {
-          // Navigate to the Add Products Page for sellers, passing email and password
+          // Navigate to the Add Products Page for sellers
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
@@ -91,15 +91,24 @@ class _LoginPageState extends State<LoginPage> {
             ),
           );
         } else if (userType.toLowerCase() == 'admin') {
-          // Navigate to the Users Page
+          // Fetch totals and navigate to SummaryPage
+          int totalProducts = await _fetchTotalProducts();
+          int totalItemsInCart = await _fetchTotalItemsInCart();
+          int totalOrders = await _fetchTotalOrders();
+          int totalUsers = await _fetchTotalUsers();
+          
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => UserListScreen(),
+              builder: (context) => SummaryPage(
+                totalProducts: totalProducts,
+                totalItemsInCart: totalItemsInCart,
+                totalOrders: totalOrders,
+                totalUsers: totalUsers,
+              ),
             ),
           );
-        } 
-        else {
+        } else {
           _showSnackbar("Invalid user type.", Colors.red);
         }
       } else {
@@ -111,6 +120,84 @@ class _LoginPageState extends State<LoginPage> {
       setState(() {
         _isLoading = false;
       });
+    }
+  }
+
+  Future<int> _fetchTotalProducts() async {
+    try {
+      final response = await http.get(Uri.parse('http://localhost:3100/api/v1/products'));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return data['result']['products'].length; // Return total number of products
+      } else {
+        throw Exception('Failed to load products');
+      }
+    } catch (error) {
+      print('Error fetching total products: $error');
+      return 0; // Return 0 if there's an error
+    }
+  }
+
+  Future<int> _fetchTotalItemsInCart() async {
+    try {
+      final response = await http.get(Uri.parse('http://localhost:3100/api/v1/cart'));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return data['result'].length; // Return total number of items in the cart
+      } else {
+        throw Exception('Failed to load cart items');
+      }
+    } catch (error) {
+      print('Error fetching total items in cart: $error');
+      return 0; // Return 0 if there's an error
+    }
+  }
+
+  Future<int> _fetchTotalOrders() async {
+    try {
+      final response = await http.get(Uri.parse('http://localhost:3100/api/v1/orders'));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        return data['result'].length; // Return total number of orders
+      } else {
+        throw Exception('Failed to load orders');
+      }
+    } catch (error) {
+      print('Error fetching total orders: $error');
+      return 0; // Return 0 if there's an error
+    }
+  }
+
+  Future<int> _fetchTotalUsers() async {
+    try {
+      // Fetch counts for each user type
+      final customerResponse = await http.get(Uri.parse('http://localhost:3100/api/v1/users?type=customer'));
+      final sellerResponse = await http.get(Uri.parse('http://localhost:3100/api/v1/users?type=seller'));
+      final adminResponse = await http.get(Uri.parse('http://localhost:3100/api/v1/users?type=admin'));
+
+      int customerCount = 0;
+      int sellerCount = 0;
+      int adminCount = 0;
+
+      if (customerResponse.statusCode == 200) {
+        final customerData = json.decode(customerResponse.body);
+        customerCount = customerData['result'].length; // Total customers
+      }
+
+      if (sellerResponse.statusCode == 200) {
+        final sellerData = json.decode(sellerResponse.body);
+        sellerCount = sellerData['result'].length; // Total sellers
+      }
+
+      if (adminResponse.statusCode == 200) {
+        final adminData = json.decode(adminResponse.body);
+        adminCount = adminData['result'].length; // Total admins
+      }
+
+      return customerCount + sellerCount + adminCount; // Return total number of users
+    } catch (error) {
+      print('Error fetching total users: $error');
+      return 0; // Return 0 if there's an error
     }
   }
 
@@ -241,16 +328,3 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 }
-
-
-
-// nathanieladikajnr22@gmail.com
-// 123456789 - customer
-
-
-// nathanieladikajnr190@gmail.com
-// 444444444 - seller
-
-
-// nathanieladikajnr20@gmail.com
-// 999999999 - admin
