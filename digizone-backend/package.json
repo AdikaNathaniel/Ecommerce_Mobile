@@ -50,6 +50,7 @@
     "jsonwebtoken": "^9.0.2",
     "mongoose": "^8.9.7",
     "qs-to-mongo": "^4.0.1",
+    "query-string": "^9.1.1",
     "reflect-metadata": "^0.2.0",
     "rxjs": "^7.8.1",
     "stripe": "^17.6.0"

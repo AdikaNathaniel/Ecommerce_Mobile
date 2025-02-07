@@ -16,69 +16,63 @@ export class AuthMiddleware implements NestMiddleware {
 
   async use(req: Request | any, res: Response, next: NextFunction) {
     try {
-      console.log('AuthMiddleware', req.headers);
+      console.log('AuthMiddleware - Request Headers:', req.headers);
 
       // Allow access to specific public routes
       if (this.isPublicRoute(req.path, req.method) || this.isCsrfSkippedRoute(req.originalUrl)) {
+        console.log('Public route or CSRF skipped, proceeding to next middleware.');
         return next();
       }
 
       const token = req.cookies._digi_auth_token;
-      if (!token) {
-        // Check if the user can access without a token
-        if (this.isRoleAllowedWithoutToken(req.path, req.method, req.user)) {
-          return next();
+      let user;
+
+      if (token) {
+        const decodedData: any = decodeAuthToken(token);
+        user = await this.userDB.findById(decodedData.id);
+
+        if (!user) {
+          console.log('No user found for the given token, unauthorized access.');
+          throw new UnauthorizedException('Unauthorized');
         }
-        throw new UnauthorizedException('Missing auth token');
+
+        console.log('Authenticated User:', user);
+        req.user = user;
+      } else {
+        console.log('No token found in cookies, checking role from headers...');
+
+        // Accept role from request headers
+        const roleFromHeader = req.headers['role'];
+        const emailFromHeader = req.headers['email'];
+
+        if (roleFromHeader && (roleFromHeader === 'Seller' || roleFromHeader === 'Admin')) {
+          user = { 
+            role: roleFromHeader,
+            email: emailFromHeader
+          };
+          req.user = user;
+          console.log('User role from header:', user.role);
+        } else {
+          throw new UnauthorizedException('Missing auth token');
+        }
       }
 
-      const decodedData: any = decodeAuthToken(token);
-      const user = await this.userDB.findById(decodedData.id);
-      if (!user) {
-        throw new UnauthorizedException('Unauthorized');
-      }
-
-      user.password = undefined;
-      req.user = user;
-
-      // Check again if the user's role allows them to access without a token
-      if (this.isRoleAllowedWithoutToken(req.path, req.method, user)) {
-        return next();
-      }
-
+      // TEMPORARY: BYPASS ROLE CHECK
       next();
+
     } catch (error) {
+      console.error('Authentication Error:', error);
       throw new UnauthorizedException(error.message);
     }
   }
 
-  private isRoleAllowedWithoutToken(path: string, method: string, user: any): boolean {
-    // Routes where certain roles can bypass authentication
-    const allowedRoutes = [
-      { path: '/api/v1/products', method: 'POST' }, // Allow product creation
-      { path: '/api/v1/products', method: 'DELETE' }, // Allow product deletion
-    ];
-
-    const isAllowedRoute = allowedRoutes.some(route => path === route.path && method === route.method);
-
-    // Allow only if the user exists and is either a Seller or an Admin
-    if (isAllowedRoute && user && (user.role === 'Seller' || user.role === 'Admin')) {
-      return true;
-    }
-
-    return false;
-  }
-
   private isPublicRoute(path: string, method: string): boolean {
     const publicRoutes = [
-      // App routes
       { path: '/api/v1', method: 'GET' },
       { path: '/api/v1/test', method: 'GET' },
       { path: '/api/v1/csrf-token', method: 'GET' },
-
-      // User routes
-      { path: '/api/v1/users', method: 'POST' }, // signup
-      { path: '/api/v1/users', method: 'GET' }, // get all users
+      { path: '/api/v1/users', method: 'POST' },
+      { path: '/api/v1/users', method: 'GET' },
       { path: '/api/v1/users/login', method: 'POST' },
       { path: '/api/v1/users/verify-email', method: 'GET' },
       { path: '/api/v1/users/send-otp-email', method: 'GET' },
@@ -86,14 +80,10 @@ export class AuthMiddleware implements NestMiddleware {
       { path: '/api/v1/users/forgot-password', method: 'GET' },
       { path: '/api/v1/users/update-name-password', method: 'PATCH' },
       { path: '/api/v1/users', method: 'DELETE' },
-
-      // Product routes
-      { path: '/api/v1/products', method: 'GET' }, // View all products
-      { path: '/api/v1/products/', method: 'GET' }, // View single product
+      { path: '/api/v1/products', method: 'GET' },
+      { path: '/api/v1/products/', method: 'GET' },
       { path: '/api/v1/products/', method: 'PATCH' },
       { path: '/api/v1/products/', method: 'DELETE' },
-
-      // Order routes
       { path: '/api/v1/orders/webhook', method: 'POST' }
     ];
 
@@ -104,6 +94,10 @@ export class AuthMiddleware implements NestMiddleware {
   }
 
   private isCsrfSkippedRoute(url: string): boolean {
-    return url.includes('/orders/webhook');
+    const isSkipped = url.includes('/orders/webhook');
+    if (isSkipped) {
+      console.log('CSRF check skipped for URL:', url);
+    }
+    return isSkipped;
   }
 }

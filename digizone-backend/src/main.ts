@@ -44,7 +44,7 @@ async function bootstrap() {
           : true,
         credentials: true,
         methods: ['GET', 'POST', 'PUT', 'DELETE', 'PATCH', 'OPTIONS'],
-        allowedHeaders: ['Content-Type', 'Authorization', 'X-XSRF-TOKEN']
+        allowedHeaders: ['Content-Type', 'Authorization', 'Role', 'X-XSRF-TOKEN'] // Added 'Role' header
       });
 
       app.use(express.json({ limit: '50mb' }));

@@ -4,10 +4,12 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'product_page.dart';
 import 'register_page.dart'; // Import RegisterPage
+import 'product_page.dart'; // Import ProductsPage
+import 'add_product.dart'; // Import AddProductPage
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // Initialize Stripe with your publishable key
   Stripe.publishableKey = 'pk_test_51Ql8Us4GUh5P0VNWFj1S5Fk5aP2hN9YE0pXPqvdV7IvmkLQurgeYB7lfO2m31qLnVjy7HFSz21HsuRK5ecrSSgu700Bt9em69W';
   
@@ -45,9 +47,10 @@ class _LoginPageState extends State<LoginPage> {
   Future<void> _login() async {
     final email = _emailController.text;
     final password = _passwordController.text;
+    final userType = _typeController.text;
 
-    if (email.isEmpty || password.isEmpty) {
-      _showSnackbar("Email and Password are required!", Colors.red);
+    if (email.isEmpty || password.isEmpty || userType.isEmpty) {
+      _showSnackbar("Email, Password, and User Type are required!", Colors.red);
       return;
     }
 
@@ -69,12 +72,26 @@ class _LoginPageState extends State<LoginPage> {
 
       if (response.statusCode == 200 && responseData['success']) {
         _showSnackbar("Login successful", Colors.green);
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => ProductsPage(userEmail: email),
-          ),
-        );
+        
+        if (userType.toLowerCase() == 'seller') {
+          // Navigate to the Add Products Page for sellers, passing email and password
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => AddProductPage(userEmail: email, userPassword: password),
+            ),
+          );
+        } else if (userType.toLowerCase() == 'customer') {
+          // Navigate to the Products Page for customers
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => ProductsPage(userEmail: email),
+            ),
+          );
+        } else {
+          _showSnackbar("Invalid user type.", Colors.red);
+        }
       } else {
         _showSnackbar(responseData['message'] ?? "Wrong credentials.", Colors.red);
       }
@@ -158,13 +175,13 @@ class _LoginPageState extends State<LoginPage> {
               ),
               obscureText: true,
             ),
-              SizedBox(height: 15),
-              TextField(
+            SizedBox(height: 15),
+            TextField(
               controller: _typeController,
               decoration: InputDecoration(
-                labelText: 'User Type',
+                labelText: 'User Type (Admin, Customer, or Seller)',
                 labelStyle: TextStyle(color: Colors.blue),
-                prefixIcon: Icon(Icons.person_outline, color: Colors.blue), // User type icon
+                prefixIcon: Icon(Icons.person_outline, color: Colors.blue),
                 enabledBorder: OutlineInputBorder(
                   borderSide: BorderSide(color: Colors.blue),
                 ),

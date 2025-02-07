@@ -32,13 +32,13 @@ export class ProductsService {
   }> {
     try {
       // create a product in stripe
-      if (!createProductDto.stripeProductId) {
-        const createdProductInStripe = await this.stripeClient.products.create({
-          name: createProductDto.productName,
-          description: createProductDto.description,
-        });
-        createProductDto.stripeProductId = createdProductInStripe.id;
-      }
+      // if (!createProductDto.stripeProductId) {
+      //   const createdProductInStripe = await this.stripeClient.products.create({
+      //     name: createProductDto.productName,
+      //     description: createProductDto.description,
+      //   });
+      //   createProductDto.stripeProductId = createdProductInStripe.id;
+      // }
 
       const createdProductInDB = await this.productDB.create(createProductDto);
       return {

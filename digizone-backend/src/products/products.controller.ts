@@ -26,9 +26,10 @@ import { ProductSkuDto, ProductSkuDtoArr } from './dto/product-sku.dto';
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
+  
   @Post()
-  @HttpCode(201)
-  @Roles(userTypes.ADMIN, userTypes.SELLER) // Allow both ADMIN and SELLER to create products
+  // @HttpCode(201)
+  // @Roles(userTypes.ADMIN, userTypes.SELLER) // Allow both ADMIN and SELLER to create products
   async create(@Body() createProductDto: CreateProductDto) {
     return await this.productsService.createProduct(createProductDto);
   }
