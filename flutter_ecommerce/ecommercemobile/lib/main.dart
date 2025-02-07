@@ -6,6 +6,7 @@ import 'product_page.dart';
 import 'register_page.dart'; // Import RegisterPage
 import 'product_page.dart'; // Import ProductsPage
 import 'add_product.dart'; // Import AddProductPage
+import 'user_screen.dart'; // Import UserListScreen
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -89,7 +90,16 @@ class _LoginPageState extends State<LoginPage> {
               builder: (context) => ProductsPage(userEmail: email),
             ),
           );
-        } else {
+        } else if (userType.toLowerCase() == 'admin') {
+          // Navigate to the Users Page
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(
+              builder: (context) => UserListScreen(),
+            ),
+          );
+        } 
+        else {
           _showSnackbar("Invalid user type.", Colors.red);
         }
       } else {

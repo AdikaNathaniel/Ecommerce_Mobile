@@ -72,7 +72,7 @@ export class UsersController {
   }
 
   @Get()
-  @Roles(userTypes.ADMIN)
+  // @Roles(userTypes.ADMIN)
   async findAll(@Query('type') type: string) {
     return await this.usersService.findAll(type);
   }
