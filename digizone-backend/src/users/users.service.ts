@@ -237,18 +237,28 @@ export class UsersService {
 
   async findAll(type: string) {
     try {
-      const users = await this.userDB.find({
-        type,
-      });
+      const users = await this.userDB.find({ type });
+  
+      // Structure response to include user details
+      const userList = users.map(user => ({
+        id: user._id.toString(),
+        name: user.name,
+        email: user.email,
+        type: user.type,
+        isVerified: user.isVerified,
+        // createdAt: user.createdAt,
+      }));
+  
       return {
         success: true,
         message: 'Users fetched successfully',
-        result: users,
+        result: userList,
       };
     } catch (error) {
       throw error;
     }
   }
+  
 
   async updatePasswordOrName(
     id: string,
