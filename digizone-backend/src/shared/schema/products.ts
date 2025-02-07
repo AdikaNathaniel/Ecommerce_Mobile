@@ -42,20 +42,20 @@ export class SkuDetails extends Document {
   @Prop({ required: true })
   skuName: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, default: 0 })
   price: number;
 
-  @Prop()
+  @Prop({ default: 0 }) // Default validity to avoid null
   validity: number;
 
-  @Prop({ default: false })
+  @Prop({ default: false }) // Default to false to avoid null
   lifetime: boolean;
 
-  @Prop()
+  @Prop({ default: '' }) // Avoid null issues with empty string
   stripePriceId: string;
 
-  @Prop()
-  skuCode?: string;
+  @Prop({ default: '' }) // Avoid null issues
+  skuCode: string;
 }
 
 export const SkuDetailsSchema = SchemaFactory.createForClass(SkuDetails);
@@ -72,7 +72,7 @@ export class Products extends Document {
     default:
       'https://us.123rf.com/450wm/pavelstasevich/pavelstasevich1811/pavelstasevich181101027/112815900-no-image-available-icon-flat-vector.jpg?ver=6',
   })
-  image?: string;
+  image: string;
 
   @Prop({
     required: true,
@@ -95,31 +95,31 @@ export class Products extends Document {
   })
   baseType: baseType;
 
-  @Prop({ required: true })
+  @Prop({ default: '' }) // Ensure no null values
   productUrl: string;
 
-  @Prop({ required: true })
+  @Prop({ default: '' }) // Ensure no null values
   downloadUrl: string;
 
-  @Prop({ default: 0 })
+  @Prop({ default: 0 }) // Default to 0 to prevent null issues
   avgRating: number;
 
-  @Prop({ type: [FeedbackSchema], default: [] })
+  @Prop({ type: [FeedbackSchema], default: [] }) // Ensure an empty array
   feedbackDetails: Feedbackers[];
 
-  @Prop({ type: [SkuDetailsSchema], default: [] })
+  @Prop({ type: [SkuDetailsSchema], default: [] }) // Ensure an empty array
   skuDetails: SkuDetails[];
 
-  @Prop({ type: Object, default: {} })
+  @Prop({ type: Object, default: {} }) // Default to empty object
   imageDetails: Record<string, any>;
 
-  @Prop({ type: [Object], default: [] })
+  @Prop({ type: [Object], default: [] }) // Default to empty array
   requirementSpecification: Record<string, any>[];
 
-  @Prop({ type: [String], default: [] })
+  @Prop({ type: [String], default: [] }) // Default to empty array
   highlights: string[];
 
-  @Prop()
+  @Prop({ default: '' }) // Ensure no null values
   stripeProductId: string;
 }
 

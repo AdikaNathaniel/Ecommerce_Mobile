@@ -231,3 +231,16 @@ class _LoginPageState extends State<LoginPage> {
     );
   }
 }
+
+
+
+// nathanieladikajnr22@gmail.com
+// 123456789 - customer
+
+
+// nathanieladikajnr190@gmail.com
+// 444444444 - seller
+
+
+// nathanieladikajnr20@gmail.com
+// 999999999 - admin

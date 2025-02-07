@@ -20,7 +20,7 @@ class _AddProductPageState extends State<AddProductPage> {
   final _productUrlController = TextEditingController();
   final _downloadUrlController = TextEditingController();
   final _avgRatingController = TextEditingController();
-  final _priceController = TextEditingController();
+  // final _priceController = TextEditingController(); // Commented out
   final _highlightsController = TextEditingController();
 
   bool _isLoading = false;
@@ -37,7 +37,7 @@ class _AddProductPageState extends State<AddProductPage> {
     final productUrl = _productUrlController.text;
     final downloadUrl = _downloadUrlController.text;
     final avgRating = double.tryParse(_avgRatingController.text) ?? 0.0;
-    final price = double.tryParse(_priceController.text) ?? 0.0;
+    // final price = double.tryParse(_priceController.text) ?? 0.0; // Commented out
     final highlights = _highlightsController.text.split(',').map((e) => e.trim()).toList();
 
     // Validate input fields
@@ -47,7 +47,8 @@ class _AddProductPageState extends State<AddProductPage> {
         category == null ||
         platformType == null ||
         baseType.isEmpty ||
-        price.isNaN) {
+        // price.isNaN) { // Commented out
+        highlights.isEmpty) { // Added highlights check
       _showSnackbar("All fields are required!", Colors.red);
       return;
     }
@@ -77,7 +78,7 @@ class _AddProductPageState extends State<AddProductPage> {
       'productUrl': productUrl,
       'downloadUrl': downloadUrl,
       'avgRating': avgRating,
-      'price': price,
+      // 'price': price, // Commented out
       'highlights': highlights,
       'createdAt': DateTime.now().toIso8601String(),
       'updatedAt': DateTime.now().toIso8601String(),
@@ -240,9 +241,8 @@ class _AddProductPageState extends State<AddProductPage> {
               ),
               SizedBox(height: 15),
               TextField(
-                controller: _priceController,
-                decoration: _buildInputDecoration('Price', Icons.attach_money),
-                keyboardType: TextInputType.number,
+                controller: _highlightsController, 
+                decoration: _buildInputDecoration('Highlights (comma separated)', Icons.star),
               ),
               SizedBox(height: 20),
               _isLoading

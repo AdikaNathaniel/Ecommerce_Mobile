@@ -9,7 +9,7 @@ class Product {
   final List<Requirement> requirementSpecification;
   final List<String> highlights;
   final String stripeProductId;
-  final String image; // Add this line to include the image property
+  final String image;
   final List<SkuDetail> skuDetails;
 
   Product({
@@ -23,33 +23,31 @@ class Product {
     required this.requirementSpecification,
     required this.highlights,
     required this.stripeProductId,
-    required this.image, // Include image in constructor
+    required this.image,
     required this.skuDetails,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
-    var requirementsFromJson = json['requirementSpecification'] as List;
-    List<Requirement> requirementsList = requirementsFromJson.map((i) => Requirement.fromJson(i)).toList();
-
-    var highlightsFromJson = json['highlights'] as List;
-    List<String> highlightsList = highlightsFromJson.cast<String>();
-
-    var skuDetailsFromJson = json['skuDetails'] as List;
-    List<SkuDetail> skuDetailsList = skuDetailsFromJson.map((i) => SkuDetail.fromJson(i)).toList();
-
     return Product(
-      productName: json['productName'],
-      description: json['description'],
-      category: json['category'],
-      platformType: json['platformType'],
-      baseType: json['baseType'],
-      productUrl: json['productUrl'],
-      downloadUrl: json['downloadUrl'],
-      requirementSpecification: requirementsList,
-      highlights: highlightsList,
-      stripeProductId: json['stripeProductId'],
-      image: json['image'] ?? 'https://us.123rf.com/450wm/pavelstasevich/pavelstasevich1811/pavelstasevich181101027/112815900-no-image-available-icon-flat-vector.jpg?ver=6', // Default image
-      skuDetails: skuDetailsList,
+      productName: json['productName'] ?? 'Unknown Product',
+      description: json['description'] ?? 'No description available',
+      category: json['category'] ?? 'Unknown',
+      platformType: json['platformType'] ?? 'Unknown',
+      baseType: json['baseType'] ?? 'Unknown',
+      productUrl: json['productUrl'] ?? '',
+      downloadUrl: json['downloadUrl'] ?? '',
+      requirementSpecification: (json['requirementSpecification'] as List?)
+              ?.map((i) => Requirement.fromJson(i))
+              .toList() ??
+          [],
+      highlights: (json['highlights'] as List?)?.cast<String>() ?? [],
+      stripeProductId: json['stripeProductId'] ?? '',
+      image: json['image'] ??
+          'https://us.123rf.com/450wm/pavelstasevich/pavelstasevich1811/pavelstasevich181101027/112815900-no-image-available-icon-flat-vector.jpg?ver=6',
+      skuDetails: (json['skuDetails'] as List?)
+              ?.map((i) => SkuDetail.fromJson(i))
+              .toList() ??
+          [],
     );
   }
 }
@@ -67,9 +65,9 @@ class Requirement {
 
   factory Requirement.fromJson(Map<String, dynamic> json) {
     return Requirement(
-      requirementId: json['requirementId'],
-      description: json['description'],
-      priority: json['priority'],
+      requirementId: json['requirementId'] ?? '',
+      description: json['description'] ?? 'No description provided',
+      priority: json['priority'] ?? 'Medium',
     );
   }
 }
@@ -93,12 +91,12 @@ class SkuDetail {
 
   factory SkuDetail.fromJson(Map<String, dynamic> json) {
     return SkuDetail(
-      skuName: json['skuName'],
-      price: json['price'],
-      validity: json['validity'],
-      lifetime: json['lifetime'],
-      stripePriceId: json['stripePriceId'],
-      skuCode: json['skuCode'],
+      skuName: json['skuName'] ?? 'Unknown SKU',
+      price: (json['price'] as num?)?.toDouble() ?? 0.0,
+      validity: json['validity'] ?? 0,
+      lifetime: json['lifetime'] ?? false,
+      stripePriceId: json['stripePriceId'] ?? '',
+      skuCode: json['skuCode'] ?? '',
     );
   }
 }
