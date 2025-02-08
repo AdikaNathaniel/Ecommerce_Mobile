@@ -2,8 +2,14 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'add_product.dart'; // Import your AddProductPage
+import 'main.dart'; // Import your LoginPage
 
 class DeliveryManagementPage extends StatefulWidget {
+  final String userEmail;
+  final String userPassword;
+
+  DeliveryManagementPage({required this.userEmail, required this.userPassword});
+
   @override
   _DeliveryManagementPageState createState() => _DeliveryManagementPageState();
 }
@@ -17,6 +23,11 @@ class _DeliveryManagementPageState extends State<DeliveryManagementPage> {
 
   String _statusMessage = '';
   bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+  }
 
   Future<void> _createDelivery() async {
     setState(() {
@@ -188,10 +199,85 @@ class _DeliveryManagementPageState extends State<DeliveryManagementPage> {
     );
   }
 
+  void _showUserInfoDialog() {
+    String email = widget.userEmail; 
+    String role = 'Seller'; // Hardcoded role
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Center(child: Text('Account Details')),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+            Icon(Icons.email),
+            SizedBox(width: 10),
+            Text(email),
+              ],
+            ),
+            SizedBox(height: 10),
+            Row(
+              children: [
+                Icon(Icons.person),
+                SizedBox(width: 10),
+                Text(role),
+              ],
+            ),
+            SizedBox(height: 10),
+            TextButton(
+              onPressed: () async {
+                // Call logout API
+                final response = await http.put(
+                  Uri.parse('http://localhost:3100/api/v1/users/logout'),
+                  headers: {'Content-Type': 'application/json'},
+                );
+
+                if (response.statusCode == 200) {
+                  final responseData = json.decode(response.body);
+                  if (responseData['success']) {
+                    _showSuccessDialog("Logout successfully");
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => LoginPage()),
+                    );
+                  } else {
+                    _showSnackbar("Logout failed: ${responseData['message']}", Colors.red);
+                  }
+                } else {
+                  _showSnackbar("Logout failed: Server error", Colors.red);
+                }
+              },
+              child: Text('Logout', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSnackbar(String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: color,
+        duration: Duration(seconds: 2),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-       appBar: AppBar(
+      appBar: AppBar(
         backgroundColor: Colors.blue,
         title: Container(
           width: double.infinity,
@@ -202,6 +288,18 @@ class _DeliveryManagementPageState extends State<DeliveryManagementPage> {
             ),
           ),
         ),
+        actions: [
+          IconButton(
+            icon: CircleAvatar(
+              child: Text(
+                widget.userEmail.isNotEmpty ? widget.userEmail[0].toUpperCase() : 'U', // Use the first letter of the email
+                style: TextStyle(color: Colors.blue),
+              ),
+              backgroundColor: Colors.white,
+            ),
+            onPressed: _showUserInfoDialog,
+          ),
+        ],
       ),
       drawer: Drawer(
         child: ListView(
@@ -230,8 +328,8 @@ class _DeliveryManagementPageState extends State<DeliveryManagementPage> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => AddProductPage(
-                      userEmail: 'user@example.com', // Pass the actual email
-                      userPassword: 'password123', // Pass the actual password
+                      userEmail: widget.userEmail, // Pass the actual email
+                      userPassword: widget.userPassword, // Pass the actual password
                     ),
                   ),
                 );

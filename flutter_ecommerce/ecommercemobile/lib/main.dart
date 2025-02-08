@@ -81,7 +81,7 @@ class _LoginPageState extends State<LoginPage> {
             context,
             MaterialPageRoute(
               // builder: (context) => AddProductPage(userEmail: email, userPassword: password),
-                 builder: (context) => DeliveryManagementPage()
+                 builder: (context) => DeliveryManagementPage(userEmail: email, userPassword: password)
             ),
           );
         } else if (userType.toLowerCase() == 'customer') {
