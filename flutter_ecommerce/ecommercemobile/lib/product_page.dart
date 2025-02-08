@@ -4,6 +4,9 @@ import 'dart:convert';
 import 'product.dart';
 import 'product_details_page.dart';
 import 'summary_page.dart';
+import 'orders_page.dart'; // Import your OrdersPage
+import 'cart_details.dart'; // Import your MyCartPage
+import 'main.dart'; // Import your LoginPage
 
 class ProductsPage extends StatefulWidget {
   final String userEmail;
@@ -70,18 +73,115 @@ class _ProductsPageState extends State<ProductsPage> {
     });
   }
 
-  // void _navigateToSummary() {
-  //   Navigator.push(
-  //     context,
-  //     MaterialPageRoute(
-  //       builder: (context) => SummaryPage(
-  //         totalProducts: _products.length,
-  //         totalItemsInCart: 0, // This can be updated with actual cart count
-  //         totalOrders: 0, // This can be updated with actual orders count
-  //       ),
-  //     ),
-  //   );
-  // }
+  void _showUserInfoDialog() {
+    String email = widget.userEmail; 
+    String role = 'Customer'; // Hardcoded role
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Center(child: Text('Account Details')),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.email),
+                SizedBox(width: 10),
+                Text(email),
+              ],
+            ),
+            SizedBox(height: 10),
+            Row(
+              children: [
+                Icon(Icons.person),
+                SizedBox(width: 10),
+                Text(role),
+              ],
+            ),
+            SizedBox(height: 10),
+            TextButton(
+              onPressed: () async {
+                // Call logout API
+                final response = await http.put(
+                  Uri.parse('http://localhost:3100/api/v1/users/logout'),
+                  headers: {'Content-Type': 'application/json'},
+                );
+
+                if (response.statusCode == 200) {
+                  final responseData = json.decode(response.body);
+                  if (responseData['success']) {
+                    _showSuccessDialog("Logout successfully");
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => LoginPage()),
+                    );
+                  } else {
+                    _showSnackbar("Logout failed: ${responseData['message']}", Colors.red);
+                  }
+                } else {
+                  _showSnackbar("Logout failed: Server error", Colors.red);
+                }
+              },
+              child: Text('Logout', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showSnackbar(String message, Color color) {
+    final snackBar = SnackBar(
+      content: Text(message),
+      backgroundColor: color,
+      duration: Duration(seconds: 2),
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+  void _showSuccessDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Icon(Icons.check_circle, color: Colors.green, size: 50),
+        content: Text(message, textAlign: TextAlign.center),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Future<void> _navigateToOrdersPage() async {
+    try {
+      final response = await http.get(Uri.parse('http://localhost:3100/api/v1/orders?email=${widget.userEmail}'));
+      if (response.statusCode == 200) {
+        final data = json.decode(response.body);
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => OrdersPage(orders: data['result'], userEmail: widget.userEmail), // Pass userEmail and fetched orders
+          ),
+        );
+      } else {
+        _showSnackbar("Failed to load orders.", Colors.red);
+      }
+    } catch (error) {
+      _showSnackbar("Error connecting to server.", Colors.red);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -97,12 +197,55 @@ class _ProductsPageState extends State<ProductsPage> {
             ),
           ),
         ),
-        // actions: [
-        //   IconButton(
-        //     icon: Icon(Icons.summarize, color: Colors.white),
-        //     onPressed: _navigateToSummary,
-        //   ),
-        // ],
+        actions: [
+          IconButton(
+            icon: CircleAvatar(
+              child: Text(
+                widget.userEmail.isNotEmpty ? widget.userEmail[0].toUpperCase() : 'U',
+                style: TextStyle(color: Colors.blue),
+              ),
+              backgroundColor: Colors.white,
+            ),
+            onPressed: _showUserInfoDialog, // Show user info dialog
+          ),
+        ],
+      ),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            DrawerHeader(
+              decoration: BoxDecoration(
+                color: Colors.blue,
+              ),
+              child: Center(
+                child: Text(
+                  'DIGIZONE - CUSTOMER',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 24,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ),
+            ),
+            ListTile(
+              leading: Icon(Icons.list),
+              title: Text('My Orders'),
+              onTap: _navigateToOrdersPage, // Updated to fetch and navigate to orders
+            ),
+            ListTile(
+              leading: Icon(Icons.shopping_cart),
+              title: Text('My Cart'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => MyCartPage(userEmail: widget.userEmail)), // Pass userEmail to MyCartPage
+                );
+              },
+            ),
+          ],
+        ),
       ),
       body: Container(
         color: Colors.blue[50],
