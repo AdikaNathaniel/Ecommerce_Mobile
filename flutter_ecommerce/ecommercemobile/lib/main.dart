@@ -80,8 +80,7 @@ class _LoginPageState extends State<LoginPage> {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              // builder: (context) => AddProductPage(userEmail: email, userPassword: password),
-                 builder: (context) => DeliveryManagementPage(userEmail: email, userPassword: password)
+              builder: (context) => DeliveryManagementPage(userEmail: email, userPassword: password),
             ),
           );
         } else if (userType.toLowerCase() == 'customer') {
@@ -107,6 +106,7 @@ class _LoginPageState extends State<LoginPage> {
                 totalItemsInCart: totalItemsInCart,
                 totalOrders: totalOrders,
                 totalUsers: totalUsers,
+                userEmail: email, // Pass userEmail to SummaryPage
               ),
             ),
           );
