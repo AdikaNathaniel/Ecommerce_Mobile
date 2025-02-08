@@ -1,6 +1,10 @@
 import 'package:flutter/material.dart';
 
 class TopChartsPage extends StatelessWidget {
+  final String userEmail;
+
+  TopChartsPage({required this.userEmail});
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(

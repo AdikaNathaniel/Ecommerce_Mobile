@@ -79,7 +79,7 @@ class _ProductsPageState extends State<ProductsPage> {
   }
 
   void _showUserInfoDialog() {
-    String email = widget.userEmail; 
+    String email = widget.userEmail;
     String role = 'Customer'; // Hardcoded role
 
     showDialog(
@@ -192,22 +192,35 @@ class _ProductsPageState extends State<ProductsPage> {
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
-      // Navigate to the corresponding page
-      switch (index) {
-        case 0:
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ProductsPage(userEmail: widget.userEmail)));
-          break;
-        case 1:
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => TopChartsPage()));
-          break;
-        case 2:
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => FavoritesPage()));
-          break;
-        case 3:
-          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => PurchasesPage()));
-          break;
-      }
     });
+
+    // Navigate to the corresponding page
+    switch (index) {
+      case 0:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => ProductsPage(userEmail: widget.userEmail)),
+        );
+        break;
+      case 1:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => TopChartsPage(userEmail: widget.userEmail)),
+        );
+        break;
+      case 2:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => FavoritesPage(userEmail: widget.userEmail)),
+        );
+        break;
+      case 3:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => PurchasesPage(userEmail: widget.userEmail)),
+        );
+        break;
+    }
   }
 
   @override
