@@ -8,7 +8,6 @@ import 'favorite.dart';
 import 'purchases.dart';
 import 'orders_page.dart'; // Import your OrdersPage
 import 'product_page.dart'; // Import your ProductsPage
-import 'products.dart';
 
 class TopChartsPage extends StatefulWidget {
   final String userEmail;
@@ -370,10 +369,7 @@ class _TopChartsPageState extends State<TopChartsPage> {
         );
         break;
       case 1:
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (context) => TopChartsPage(userEmail: widget.userEmail)),
-        );
+        // Already on TopChartsPage
         break;
       case 2:
         Navigator.pushReplacement(
@@ -382,9 +378,16 @@ class _TopChartsPageState extends State<TopChartsPage> {
         );
         break;
       case 3:
+        // You need to provide orders here
+        List<dynamic> yourOrdersList = []; // Replace with your actual logic to fetch orders
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => PurchasesPage(userEmail: widget.userEmail)),
+          MaterialPageRoute(
+            builder: (context) => PurchasesPage(
+              orders: yourOrdersList.take(10).toList(), // Pass the last 10 orders
+              userEmail: widget.userEmail,
+            ),
+          ),
         );
         break;
     }

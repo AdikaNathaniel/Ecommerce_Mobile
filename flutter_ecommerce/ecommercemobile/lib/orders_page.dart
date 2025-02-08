@@ -4,6 +4,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'main.dart'; // Import your LoginPage
 import 'payment_screen.dart'; // Import PaymentScreen
+import 'purchases.dart'; // Import PurchasesPage
 
 class OrdersPage extends StatelessWidget {
   final List<dynamic> orders;
@@ -111,7 +112,6 @@ class OrdersPage extends StatelessWidget {
     }
 
     try {
-      // Show loading indicator
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Creating payment intent...'),
@@ -119,7 +119,6 @@ class OrdersPage extends StatelessWidget {
         ),
       );
 
-      // Call your backend to create a payment intent
       final response = await http.post(
         Uri.parse('http://localhost:3100/api/v1/stripe/payment-intent'),
         headers: {"Content-Type": "application/json"},
@@ -129,7 +128,6 @@ class OrdersPage extends StatelessWidget {
         }),
       );
 
-      // Check for successful payment intent creation (201 status)
       if (response.statusCode == 201) {
         final responseData = json.decode(response.body);
         final clientSecret = responseData['client_secret'];
@@ -146,13 +144,23 @@ class OrdersPage extends StatelessWidget {
               clientSecret: clientSecret,
               userEmail: userEmail,
             ),
-          ),
-        );
+          )).then((value) {
+            // After returning from PaymentScreen, navigate to PurchasesPage
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (context) => PurchasesPage(
+                  orders: orders.take(10).toList(), // Pass the last 10 orders
+                  userEmail: userEmail,
+                ),
+              ),
+            );
+          });
       } else {
         throw Exception('Failed to create payment intent: ${response.statusCode}');
       }
     } catch (error) {
-      print('Payment error: $error'); // For debugging
+      print('Payment error: $error');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Payment failed: ${error.toString()}'),
@@ -163,7 +171,6 @@ class OrdersPage extends StatelessWidget {
     }
   }
 
-  // Show user info dialog
   void _showUserInfoDialog(BuildContext context) {
     String email = userEmail; 
     String role = 'Customer'; // Hardcoded role
@@ -194,7 +201,6 @@ class OrdersPage extends StatelessWidget {
             SizedBox(height: 10),
             TextButton(
               onPressed: () async {
-                // Call logout API
                 final response = await http.put(
                   Uri.parse('http://localhost:3100/api/v1/users/logout'),
                   headers: {'Content-Type': 'application/json'},

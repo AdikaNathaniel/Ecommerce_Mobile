@@ -215,9 +215,15 @@ class _ProductsPageState extends State<ProductsPage> {
         );
         break;
       case 3:
+        // Here, you need to provide the orders list when navigating to PurchasesPage.
         Navigator.pushReplacement(
           context,
-          MaterialPageRoute(builder: (context) => PurchasesPage(userEmail: widget.userEmail)),
+          MaterialPageRoute(
+            builder: (context) => PurchasesPage(
+              orders: [], // You need to replace this with the actual orders list
+              userEmail: widget.userEmail,
+            ),
+          ),
         );
         break;
     }

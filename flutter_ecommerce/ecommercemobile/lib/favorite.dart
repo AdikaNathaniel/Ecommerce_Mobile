@@ -6,11 +6,12 @@ import 'product_page.dart'; // Import ProductsPage
 import 'top-chart.dart'; // Import TopChartsPage
 import 'purchases.dart'; // Import PurchasesPage
 import 'product.dart'; // Your Product model
+import 'orders_page.dart'; // Import OrdersPage
 
 class FavoritesPage extends StatefulWidget {
   final String userEmail;
 
-  const FavoritesPage({Key? key, required this.userEmail}) : super(key: key);
+  const FavoritesPage({required this.userEmail});
 
   @override
   _FavoritesPageState createState() => _FavoritesPageState();
@@ -19,7 +20,6 @@ class FavoritesPage extends StatefulWidget {
 class _FavoritesPageState extends State<FavoritesPage> {
   List<Product> _favorites = [];
   bool _isLoading = true;
-
   int _selectedIndex = 2; // Set to 2 for Favorites
   final TextEditingController _productNameController = TextEditingController();
   final TextEditingController _categoryController = TextEditingController();
@@ -70,9 +70,8 @@ class _FavoritesPageState extends State<FavoritesPage> {
         headers: {"Content-Type": "application/json"},
         body: json.encode({
           'productName': productName,
-        //   'status': status,
           'image': image,
-          'category': category, 
+          'category': category,
         }),
       );
 
@@ -119,13 +118,10 @@ class _FavoritesPageState extends State<FavoritesPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blue,
-        title: Container(
-          width: double.infinity,
-          child: Center(
-            child: Text(
-              'Favorites',
-              style: TextStyle(color: Colors.white),
-            ),
+        title: Center(
+          child: Text(
+            'Favorites',
+            style: TextStyle(color: Colors.white),
           ),
         ),
         actions: [
@@ -162,7 +158,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                     child: TextField(
                       controller: _categoryController,
                       decoration: InputDecoration(
-                        labelText: 'Category(Action, Adventure,Board,Eductational or Sports)',
+                        labelText: 'Category (Action, Adventure, Board, Educational, Sports)',
                         border: OutlineInputBorder(),
                       ),
                     ),
@@ -184,14 +180,6 @@ class _FavoritesPageState extends State<FavoritesPage> {
                         onPressed: _addFavorite,
                         child: Text('Add Favorite'),
                       ),
-                    //   ElevatedButton(
-                    //     onPressed: () => _removeFavorite(_productNameController.text),
-                    //     child: Text('Remove Favorite'),
-                    //   ),
-                    //   ElevatedButton(
-                    //     onPressed: _fetchFavorites,
-                    //     child: Text('View Favorites'),
-                    //   ),
                     ],
                   ),
                   Expanded(
@@ -269,9 +257,16 @@ class _FavoritesPageState extends State<FavoritesPage> {
               // Already on FavoritesPage
               break;
             case 3:
+              // Assuming you have a way to get orders here
+              List<dynamic> yourOrdersList = []; // Replace with your actual logic to fetch orders
               Navigator.pushReplacement(
                 context,
-                MaterialPageRoute(builder: (context) => PurchasesPage(userEmail: widget.userEmail)),
+                MaterialPageRoute(
+                  builder: (context) => PurchasesPage(
+                    orders: yourOrdersList.take(10).toList(), // Pass the last 10 orders
+                    userEmail: widget.userEmail,
+                  ),
+                ),
               );
               break;
           }
@@ -280,24 +275,6 @@ class _FavoritesPageState extends State<FavoritesPage> {
         unselectedItemColor: Colors.grey,
         showUnselectedLabels: true,
         showSelectedLabels: true,
-      ),
-    );
-  }
-
-
-
- void _showSuccessDialog(String message) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Icon(Icons.check_circle, color: Colors.green, size: 50),
-        content: Text(message, textAlign: TextAlign.center),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: Text('OK'),
-          ),
-        ],
       ),
     );
   }
@@ -330,7 +307,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
               ],
             ),
             SizedBox(height: 10),
-             TextButton(
+            TextButton(
               onPressed: () async {
                 // Call logout API
                 final response = await http.put(
@@ -341,7 +318,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
                 if (response.statusCode == 200) {
                   final responseData = json.decode(response.body);
                   if (responseData['success']) {
-                    _showSuccessDialog("Logout successfully");
+                    _showSnackbar("Logout successfully", Colors.green);
                     Navigator.pushReplacement(
                       context,
                       MaterialPageRoute(builder: (context) => LoginPage()),
