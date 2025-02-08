@@ -22,7 +22,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
 
   int _selectedIndex = 2; // Set to 2 for Favorites
   final TextEditingController _productNameController = TextEditingController();
-  final TextEditingController _statusController = TextEditingController();
+  final TextEditingController _categoryController = TextEditingController();
   final TextEditingController _imageController = TextEditingController();
 
   @override
@@ -56,7 +56,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
 
   Future<void> _addFavorite() async {
     final productName = _productNameController.text;
-    final status = _statusController.text;
+    final category = _categoryController.text;
     final image = _imageController.text;
 
     if (productName.isEmpty || image.isEmpty) {
@@ -72,7 +72,7 @@ class _FavoritesPageState extends State<FavoritesPage> {
           'productName': productName,
         //   'status': status,
           'image': image,
-          'email': widget.userEmail, // Send email with the favorite
+          'category': category, 
         }),
       );
 
@@ -157,16 +157,16 @@ class _FavoritesPageState extends State<FavoritesPage> {
                       ),
                     ),
                   ),
-                //   Padding(
-                //     padding: const EdgeInsets.all(16.0),
-                //     child: TextField(
-                //       controller: _statusController,
-                //       decoration: InputDecoration(
-                //         labelText: 'Status',
-                //         border: OutlineInputBorder(),
-                //       ),
-                //     ),
-                //   ),
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: TextField(
+                      controller: _categoryController,
+                      decoration: InputDecoration(
+                        labelText: 'Category(Action, Adventure,Board,Eductational or Sports)',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                  ),
                   Padding(
                     padding: const EdgeInsets.all(16.0),
                     child: TextField(
