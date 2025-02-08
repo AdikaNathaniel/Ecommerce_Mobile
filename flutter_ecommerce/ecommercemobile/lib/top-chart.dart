@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'dart:async';
 import 'products.dart';
-
 
 class TopChartsPage extends StatefulWidget {
   final String userEmail;
@@ -16,12 +16,29 @@ class TopChartsPage extends StatefulWidget {
 class _TopChartsPageState extends State<TopChartsPage> {
   final List<String> _categories = ["Action", "Adventure", "Board", "Educational", "Sports"];
   Map<String, List<Product>> _categoryProducts = {};
+  Map<String, ScrollController> _scrollControllers = {};
+  Map<String, Timer?> _scrollTimers = {};
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
+    _initializeScrollControllers();
     _fetchCategoryProducts();
+  }
+
+  void _initializeScrollControllers() {
+    for (String category in _categories) {
+      _scrollControllers[category] = ScrollController();
+    }
+  }
+
+  @override
+  void dispose() {
+    // Clean up scroll controllers and timers
+    _scrollControllers.values.forEach((controller) => controller.dispose());
+    _scrollTimers.values.forEach((timer) => timer?.cancel());
+    super.dispose();
   }
 
   Future<void> _fetchCategoryProducts() async {
@@ -34,10 +51,17 @@ class _TopChartsPageState extends State<TopChartsPage> {
         if (response.statusCode == 200) {
           Map<String, dynamic> data = json.decode(response.body);
           List<dynamic> productsData = data['result'];
+          
+          // Double the products list to create a seamless infinite scroll effect
+          List<Product> products = productsData.map((json) => Product.fromJson(json)).toList();
+          products = [...products, ...products];
 
           setState(() {
-            _categoryProducts[category] = productsData.map((json) => Product.fromJson(json)).toList();
+            _categoryProducts[category] = products;
           });
+
+          // Start auto-scrolling for this category
+          _startAutoScroll(category);
         } else {
           throw Exception('Failed to load products for $category');
         }
@@ -51,6 +75,72 @@ class _TopChartsPageState extends State<TopChartsPage> {
     }
   }
 
+  void _startAutoScroll(String category) {
+    const duration = Duration(milliseconds: 50);
+    const scrollStep = 1.0;
+
+    _scrollTimers[category]?.cancel();
+    _scrollTimers[category] = Timer.periodic(duration, (timer) {
+      if (!_scrollControllers[category]!.hasClients) return;
+
+      final ScrollController controller = _scrollControllers[category]!;
+      double newOffset = controller.offset + scrollStep;
+
+      // Reset to beginning when reaching end
+      if (newOffset >= controller.position.maxScrollExtent) {
+        newOffset = 0;
+      }
+
+      controller.jumpTo(newOffset);
+    });
+  }
+
+  Widget _buildProductCard(Product product) {
+    return Card(
+      margin: EdgeInsets.symmetric(horizontal: 8),
+      child: Container(
+        width: 120,
+        padding: EdgeInsets.all(8),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ClipRRect(
+              borderRadius: BorderRadius.circular(8.0),
+              child: Image.network(
+                product.image,
+                height: 80,
+                width: double.infinity,
+                fit: BoxFit.cover,
+                errorBuilder: (context, error, stackTrace) =>
+                    Icon(Icons.image_not_supported, size: 80),
+              ),
+            ),
+            SizedBox(height: 4),
+            Flexible(
+              child: Text(
+                product.productName,
+                style: TextStyle(fontWeight: FontWeight.bold),
+                maxLines: 1,
+                overflow: TextOverflow.ellipsis,
+              ),
+            ),
+            Text(
+              "\$${product.price.toString()}",
+              style: TextStyle(color: Colors.green),
+            ),
+            Text(
+              product.status,
+              style: TextStyle(color: Colors.grey, fontSize: 12),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -61,34 +151,29 @@ class _TopChartsPageState extends State<TopChartsPage> {
               itemCount: _categories.length,
               itemBuilder: (context, index) {
                 String category = _categories[index];
-                return ExpansionTile(
-                  title: Text(category, style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
-                  children: _categoryProducts[category]?.map((product) {
-                        return Card(
-                          margin: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                          child: ListTile(
-                            leading: product.image.isNotEmpty
-                                ? Image.network(
-                                    product.image,
-                                    width: 50,
-                                    height: 50,
-                                    fit: BoxFit.cover,
-                                    errorBuilder: (context, error, stackTrace) =>
-                                        Icon(Icons.image_not_supported, size: 50),
-                                  )
-                                : Icon(Icons.image, size: 50),
-                            title: Text(product.productName, style: TextStyle(fontWeight: FontWeight.bold)),
-                            subtitle: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                Text("\$${product.price}", style: TextStyle(color: Colors.green, fontSize: 16)),
-                                Text(product.status, style: TextStyle(color: Colors.grey, fontSize: 14)),
-                              ],
-                            ),
-                          ),
-                        );
-                      }).toList() ??
-                      [],
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Text(
+                        category,
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                      ),
+                    ),
+                    SizedBox(
+                      height: 170,
+                      child: ListView.builder(
+                        controller: _scrollControllers[category],
+                        scrollDirection: Axis.horizontal,
+                        itemCount: _categoryProducts[category]?.length ?? 0,
+                        itemBuilder: (context, productIndex) {
+                          final product = _categoryProducts[category]![productIndex];
+                          return _buildProductCard(product);
+                        },
+                      ),
+                    ),
+                  ],
                 );
               },
             ),
