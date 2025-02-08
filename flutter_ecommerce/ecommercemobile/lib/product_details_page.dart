@@ -3,6 +3,7 @@ import 'product.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'cart_details.dart'; // Import the CartDetailsPage
+import 'main.dart'; // Import your LoginPage
 
 class ProductDetailsPage extends StatelessWidget {
   final Product product;
@@ -125,7 +126,7 @@ class ProductDetailsPage extends StatelessWidget {
     );
   }
 
-  // Show snackbar messages at the top
+  // Show snackbar messages
   void _showSnackbar(BuildContext context, String message, Color color) {
     final snackBar = SnackBar(
       content: Text(message),
@@ -134,9 +135,72 @@ class ProductDetailsPage extends StatelessWidget {
     );
 
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
-    // Show snackbar at the top
-    ScaffoldMessenger.of(context).hideCurrentSnackBar();
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+  // Show user info dialog
+  void _showUserInfoDialog(BuildContext context) {
+    String email = userEmail; 
+    String role = 'Customer'; // Hardcoded role
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Center(child: Text('Account Details')),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.email),
+                SizedBox(width: 10),
+                Text(email),
+              ],
+            ),
+            SizedBox(height: 10),
+            Row(
+              children: [
+                Icon(Icons.person),
+                SizedBox(width: 10),
+                Text(role),
+              ],
+            ),
+            SizedBox(height: 10),
+            TextButton(
+              onPressed: () async {
+                // Call logout API
+                final response = await http.put(
+                  Uri.parse('http://localhost:3100/api/v1/users/logout'),
+                  headers: {'Content-Type': 'application/json'},
+                );
+
+                if (response.statusCode == 200) {
+                  final responseData = json.decode(response.body);
+                  if (responseData['success']) {
+                    _showSnackbar(context, "Logout successfully", Colors.green);
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => LoginPage()),
+                    );
+                  } else {
+                    _showSnackbar(context, "Logout failed: ${responseData['message']}", Colors.red);
+                  }
+                } else {
+                  _showSnackbar(context, "Logout failed: Server error", Colors.red);
+                }
+              },
+              child: Text('Logout', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Close'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -153,6 +217,18 @@ class ProductDetailsPage extends StatelessWidget {
             ),
           ),
         ),
+        actions: [
+          IconButton(
+            icon: CircleAvatar(
+              child: Text(
+                userEmail.isNotEmpty ? userEmail[0].toUpperCase() : 'U',
+                style: TextStyle(color: Colors.blue),
+              ),
+              backgroundColor: Colors.white,
+            ),
+            onPressed: () => _showUserInfoDialog(context), // Show user info dialog
+          ),
+        ],
       ),
       body: Container(
         color: Colors.blue[50], // Set the background color

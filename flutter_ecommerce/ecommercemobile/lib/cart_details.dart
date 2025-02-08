@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'orders_page.dart'; // Import the OrdersPage here
+import 'main.dart'; // Import your LoginPage
 
 class MyCartPage extends StatefulWidget {
   final String userEmail; // Add userEmail parameter
@@ -91,10 +92,21 @@ class _MyCartPageState extends State<MyCartPage> {
     }
   }
 
+  // Show snackbar messages
+  void _showSnackbar(String message, Color color) {
+    final snackBar = SnackBar(
+      content: Text(message),
+      backgroundColor: color,
+      duration: Duration(seconds: 2),
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
   // Function to navigate to orders page
   Future<void> _navigateToOrdersPage() async {
     try {
-      final response = await http.get(Uri.parse('http://localhost:3100/api/v1/orders'));
+      final response = await http.get(Uri.parse('http://localhost:3100/api/v1/orders?email=${widget.userEmail}'));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
         Navigator.push(
@@ -111,15 +123,85 @@ class _MyCartPageState extends State<MyCartPage> {
     }
   }
 
-  // Show snackbar messages
-  void _showSnackbar(String message, Color color) {
-    final snackBar = SnackBar(
-      content: Text(message),
-      backgroundColor: color,
-      duration: Duration(seconds: 2),
-    );
+  // Show user info dialog
+  void _showUserInfoDialog() {
+    String email = widget.userEmail; 
+    String role = 'Customer'; // Hardcoded role
 
-    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Center(child: Text('Account Details')),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.email),
+                SizedBox(width: 10),
+                Text(email),
+              ],
+            ),
+            SizedBox(height: 10),
+            Row(
+              children: [
+                Icon(Icons.person),
+                SizedBox(width: 10),
+                Text(role),
+              ],
+            ),
+            SizedBox(height: 10),
+            TextButton(
+              onPressed: () async {
+                // Call logout API
+                final response = await http.put(
+                  Uri.parse('http://localhost:3100/api/v1/users/logout'),
+                  headers: {'Content-Type': 'application/json'},
+                );
+
+                if (response.statusCode == 200) {
+                  final responseData = json.decode(response.body);
+                  if (responseData['success']) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text("Logout successfully"),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => LoginPage()),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text("Logout failed: ${responseData['message']}"),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text("Logout failed: Server error"),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              },
+              child: Text('Logout', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Close'),
+          ),
+        ],
+      ),
+    );
   }
 
   @override
@@ -136,6 +218,18 @@ class _MyCartPageState extends State<MyCartPage> {
             ),
           ),
         ),
+        actions: [
+          IconButton(
+            icon: CircleAvatar(
+              child: Text(
+                widget.userEmail.isNotEmpty ? widget.userEmail[0].toUpperCase() : 'U',
+                style: TextStyle(color: Colors.blue),
+              ),
+              backgroundColor: Colors.white,
+            ),
+            onPressed: _showUserInfoDialog, // Show user info dialog
+          ),
+        ],
       ),
       body: Container(
         color: Colors.blue[50], // Light blue background
