@@ -103,6 +103,7 @@ class _RegisterPageState extends State<RegisterPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false, // Remove back button
         backgroundColor: Colors.blue,
         title: Container(
           width: double.infinity, // Take full width

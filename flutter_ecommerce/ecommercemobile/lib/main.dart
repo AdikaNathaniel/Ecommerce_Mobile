@@ -217,6 +217,7 @@ class _LoginPageState extends State<LoginPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
+        automaticallyImplyLeading: false, // Remove back button
         backgroundColor: Colors.blue,
         title: Container(
           width: double.infinity,
