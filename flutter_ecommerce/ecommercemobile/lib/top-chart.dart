@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'dart:async';  // Added Timer import
+import 'dart:async';
 import 'products.dart';
 
 class TopChartsPage extends StatefulWidget {
@@ -35,7 +35,6 @@ class _TopChartsPageState extends State<TopChartsPage> {
 
   @override
   void dispose() {
-    // Clean up scroll controllers and timers
     for (var controller in _scrollControllers.values) {
       controller.dispose();
     }
@@ -56,7 +55,6 @@ class _TopChartsPageState extends State<TopChartsPage> {
           Map<String, dynamic> data = json.decode(response.body);
           List<dynamic> productsData = data['result'];
 
-          // Double the products list to create a seamless infinite scroll effect
           List<Product> products = productsData.map((json) => Product.fromJson(json)).toList();
           products = [...products, ...products];
 
@@ -64,7 +62,6 @@ class _TopChartsPageState extends State<TopChartsPage> {
             _categoryProducts[category] = products;
           });
 
-          // Start auto-scrolling for this category
           _startAutoScroll(category);
         } else {
           throw Exception('Failed to load products for $category');
@@ -90,7 +87,6 @@ class _TopChartsPageState extends State<TopChartsPage> {
       final ScrollController controller = _scrollControllers[category]!;
       double newOffset = controller.offset + scrollStep;
 
-      // Reset to beginning when reaching end
       if (newOffset >= controller.position.maxScrollExtent) {
         newOffset = 0;
       }
@@ -104,8 +100,8 @@ class _TopChartsPageState extends State<TopChartsPage> {
       margin: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
       elevation: 4,
       child: Container(
-        width: 140,
-        height: 180,
+        width: 250,
+        height: 250, // Increased height for better layout
         padding: EdgeInsets.all(8),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -115,44 +111,35 @@ class _TopChartsPageState extends State<TopChartsPage> {
               borderRadius: BorderRadius.circular(8.0),
               child: Image.network(
                 product.image,
-                height: 100,
+                height: 120, // Increased image height for better visibility
                 width: double.infinity,
                 fit: BoxFit.cover,
-                errorBuilder: (context, error, stackTrace) =>
-                    Icon(Icons.image_not_supported, size: 100),
+                errorBuilder: (context, error, stackTrace) => Image.network(
+                  'https://us.123rf.com/450wm/pavelstasevich/pavelstasevich1811/pavelstasevich181101027/112815900-no-image-available-icon-flat-vector.jpg?ver=6',
+                  fit: BoxFit.cover,
+                ),
               ),
             ),
             SizedBox(height: 8),
-            // Fixed overflow issues in Rows by using Expanded and proper constraints
-            Row(
-              children: [
-                Icon(Icons.title, size: 16),
-                SizedBox(width: 4),
-                Expanded(
-                  child: Text(
-                    product.productName,
-                    style: TextStyle(fontWeight: FontWeight.bold),
-                    maxLines: 1,
-                    overflow: TextOverflow.ellipsis,
-                  ),
-                ),
-              ],
+            Text(
+              product.productName,
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
             ),
+            SizedBox(height: 4),
             Row(
-              mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(Icons.attach_money, size: 16),
                 SizedBox(width: 4),
-                Text("\$${product.price.toString()}", 
-                    style: TextStyle(color: Colors.green)),
+                Text("\$${product.price.toString()}", style: TextStyle(color: Colors.green)),
               ],
             ),
             Row(
-              mainAxisSize: MainAxisSize.min,
               children: [
                 Icon(Icons.check_circle, size: 16),
                 SizedBox(width: 4),
-                Flexible(
+                Expanded(
                   child: Text(
                     product.status,
                     style: TextStyle(color: Colors.grey, fontSize: 12),
@@ -170,36 +157,53 @@ class _TopChartsPageState extends State<TopChartsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text("Top Charts")),
+       appBar: AppBar(
+        automaticallyImplyLeading: false, // Remove back button
+        backgroundColor: Colors.blue,
+        title: Container(
+          width: double.infinity,
+          child: Center(
+            child: Text(
+              'Top Charts',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ),
+      ),
       body: _isLoading
           ? Center(child: CircularProgressIndicator())
           : ListView.builder(
               itemCount: _categories.length,
               itemBuilder: (context, index) {
                 String category = _categories[index];
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Text(
-                        category,
-                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 8.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.all(16.0),
+                        child: Center(
+                          child: Text(
+                            category,
+                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.blue),
+                          ),
+                        ),
                       ),
-                    ),
-                    SizedBox(
-                      height: 200,
-                      child: ListView.builder(
-                        controller: _scrollControllers[category],
-                        scrollDirection: Axis.horizontal,
-                        itemCount: _categoryProducts[category]?.length ?? 0,
-                        itemBuilder: (context, productIndex) {
-                          final product = _categoryProducts[category]![productIndex];
-                          return _buildProductCard(product);
-                        },
+                      SizedBox(
+                        height: 240, // Increased height for better presentation
+                        child: ListView.builder(
+                          controller: _scrollControllers[category],
+                          scrollDirection: Axis.horizontal,
+                          itemCount: _categoryProducts[category]?.length ?? 0,
+                          itemBuilder: (context, productIndex) {
+                            final product = _categoryProducts[category]![productIndex];
+                            return _buildProductCard(product);
+                          },
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 );
               },
             ),
