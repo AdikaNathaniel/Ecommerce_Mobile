@@ -9,6 +9,7 @@ import { ProductsModule } from './products/products.module';
 import { OrderModule } from './orders/orders.module';
 import { PaymentsModule } from './payments/payments.module';
 import { StripeModule } from './payments/stripe.module';
+import { TopChartsModule } from 'src/topchart/top-chart.module';
 
 // Import delivery-related modules
 import { DeliveryService } from 'src/delivery/delivery.service';
@@ -29,6 +30,7 @@ import { MQService } from 'src/delivery/mq.service';
     CartModule,
     PaymentsModule,
     StripeModule,
+    TopChartsModule,
     MongooseModule.forFeature([{ name: Delivery.name, schema: DeliverySchema }]), // Add Delivery Schema
   ],
   controllers: [AppController, DeliveryController], // Add DeliveryController
