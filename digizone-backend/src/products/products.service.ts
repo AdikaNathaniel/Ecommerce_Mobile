@@ -370,7 +370,7 @@ export class ProductsService {
       // delete the sku details from product
       await this.productDB.deleteSku(id, skuId);
       // delete all the licences from db for that sku
-      await this.productDB.deleteAllLicences(undefined, skuId);
+      // await this.productDB.deleteAllLicences(undefined, skuId);
 
       return {
         message: 'Product sku details deleted successfully',

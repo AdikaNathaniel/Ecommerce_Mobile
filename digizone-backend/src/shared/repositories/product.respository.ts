@@ -137,10 +137,10 @@ export class ProductRepository {
     );
   }
 
-  async deleteAllLicences(productId: string, skuId: string) {
-    if (productId) {
-      return await this.licenseModel.deleteMany({ product: productId });
-    }
-    return await this.licenseModel.deleteMany({ productSku: skuId });
-  }
+  // async deleteAllLicences(productId: string, skuId: string) {
+  //   if (productId) {
+  //     return await this.licenseModel.deleteMany({ product: productId });
+  //   }
+  //   return await this.licenseModel.deleteMany({ productSku: skuId });
+  // }
 }

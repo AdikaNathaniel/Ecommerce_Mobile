@@ -7,6 +7,7 @@ import 'add_product.dart'; // Import AddProductPage
 import 'user_screen.dart'; // Import UserListScreen
 import 'summary_page.dart'; // Import SummaryPage
 import 'product_page.dart';
+import 'delivery_management.dart'; // Import DeliveryManagementPage
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -79,7 +80,8 @@ class _LoginPageState extends State<LoginPage> {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => AddProductPage(userEmail: email, userPassword: password),
+              // builder: (context) => AddProductPage(userEmail: email, userPassword: password),
+                 builder: (context) => DeliveryManagementPage()
             ),
           );
         } else if (userType.toLowerCase() == 'customer') {
