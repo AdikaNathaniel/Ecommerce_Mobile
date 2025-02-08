@@ -9,45 +9,45 @@ import {
     Query,
     HttpCode,
     HttpStatus,
-  } from '@nestjs/common';
-  import { TopChartsService } from 'src/topchart/top-chart.service';
-  import { CreateTopChartDto } from 'src/users/dto/create-top-chart.dto';
-  import { UpdateTopChartDto } from 'src/users/dto/update-top-chart.dto';
-  
-  @Controller('top-charts')
-  export class TopChartsController {
+} from '@nestjs/common';
+import { TopChartsService } from 'src/topchart/top-chart.service';
+import { CreateTopChartDto } from 'src/users/dto/create-top-chart.dto';
+import { UpdateTopChartDto } from 'src/users/dto/update-top-chart.dto';
+
+@Controller('top-charts')
+export class TopChartsController {
     constructor(private readonly topChartsService: TopChartsService) {}
-  
+
     @Post()
     async create(@Body() createTopChartDto: CreateTopChartDto) {
-      return await this.topChartsService.create(createTopChartDto);
+        return await this.topChartsService.create(createTopChartDto);
     }
-  
+
     @Get()
     async findAll() {
-      return await this.topChartsService.findAll();
+        return await this.topChartsService.findAll();
     }
-  
-    @Get(':id')
-    async findOne(@Param('id') id: string) {
-      return await this.topChartsService.findOne(id);
+
+    @Get(':productName') // Changed from ':id' to ':productName'
+    async findOne(@Param('productName') productName: string) { // Changed from id to productName
+        return await this.topChartsService.findOneByProductName(productName);
     }
-  
-    @Put(':id')
+
+    @Put(':productName') // Changed from ':id' to ':productName'
     async update(
-      @Param('id') id: string,
-      @Body() updateTopChartDto: UpdateTopChartDto,
+        @Param('productName') productName: string, // Changed from id to productName
+        @Body() updateTopChartDto: UpdateTopChartDto,
     ) {
-      return await this.topChartsService.update(id, updateTopChartDto);
+        return await this.topChartsService.updateByProductName(productName, updateTopChartDto);
     }
-  
-    @Delete(':id')
-    async remove(@Param('id') id: string) {
-      return await this.topChartsService.remove(id);
+
+    @Delete(':productName') // Changed from ':id' to ':productName'
+    async remove(@Param('productName') productName: string) { // Changed from id to productName
+        return await this.topChartsService.removeByProductName(productName);
     }
-  
+
     @Get('filter/category')
     async filterByCategory(@Query('category') category: string) {
-      return await this.topChartsService.filterByCategory(category);
+        return await this.topChartsService.filterByCategory(category);
     }
-  }
+}
