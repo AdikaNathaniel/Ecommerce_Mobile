@@ -7,6 +7,9 @@ import 'summary_page.dart';
 import 'orders_page.dart'; // Import your OrdersPage
 import 'cart_details.dart'; // Import your MyCartPage
 import 'main.dart'; // Import your LoginPage
+import 'top-chart.dart'; // Ensure these imports point to the correct files
+import 'favorite.dart';
+import 'purchases.dart';
 
 class ProductsPage extends StatefulWidget {
   final String userEmail;
@@ -25,6 +28,8 @@ class _ProductsPageState extends State<ProductsPage> {
 
   String? _selectedCategory;
   List<String> _categories = ["All", "Application Software", "Operating System"];
+
+  int _selectedIndex = 0; // Track the selected index for the bottom navigation bar
 
   @override
   void initState() {
@@ -183,6 +188,28 @@ class _ProductsPageState extends State<ProductsPage> {
     }
   }
 
+  // Handle bottom navigation bar item taps
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+      // Navigate to the corresponding page
+      switch (index) {
+        case 0:
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => ProductsPage(userEmail: widget.userEmail)));
+          break;
+        case 1:
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => TopChartsPage()));
+          break;
+        case 2:
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => FavoritesPage()));
+          break;
+        case 3:
+          Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => PurchasesPage()));
+          break;
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -206,7 +233,7 @@ class _ProductsPageState extends State<ProductsPage> {
               ),
               backgroundColor: Colors.white,
             ),
-            onPressed: _showUserInfoDialog, // Show user info dialog
+            onPressed: _showUserInfoDialog,
           ),
         ],
       ),
@@ -232,7 +259,7 @@ class _ProductsPageState extends State<ProductsPage> {
             ListTile(
               leading: Icon(Icons.list),
               title: Text('My Orders'),
-              onTap: _navigateToOrdersPage, // Updated to fetch and navigate to orders
+              onTap: _navigateToOrdersPage,
             ),
             ListTile(
               leading: Icon(Icons.shopping_cart),
@@ -240,7 +267,7 @@ class _ProductsPageState extends State<ProductsPage> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => MyCartPage(userEmail: widget.userEmail)), // Pass userEmail to MyCartPage
+                  MaterialPageRoute(builder: (context) => MyCartPage(userEmail: widget.userEmail)),
                 );
               },
             ),
@@ -351,6 +378,32 @@ class _ProductsPageState extends State<ProductsPage> {
                   ],
                 ),
               ),
+      ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.trending_up),
+            label: 'Top Charts',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite),
+            label: 'Favorites',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.shopping_basket),
+            label: 'Purchases',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+        selectedItemColor: Colors.blue, // Color for the selected item
+        unselectedItemColor: Colors.grey, // Color for unselected items
+        showUnselectedLabels: true, // Show labels for unselected items
+        showSelectedLabels: true, // Show labels for selected item
       ),
     );
   }
