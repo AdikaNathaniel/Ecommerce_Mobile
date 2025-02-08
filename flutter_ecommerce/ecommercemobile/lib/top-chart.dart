@@ -3,6 +3,12 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'dart:async';
 import 'products.dart';
+import 'main.dart'; // Import your LoginPage
+import 'favorite.dart';
+import 'purchases.dart';
+import 'orders_page.dart'; // Import your OrdersPage
+import 'product_page.dart'; // Import your ProductsPage
+import 'products.dart';
 
 class TopChartsPage extends StatefulWidget {
   final String userEmail;
@@ -19,6 +25,8 @@ class _TopChartsPageState extends State<TopChartsPage> {
   Map<String, ScrollController> _scrollControllers = {};
   Map<String, Timer?> _scrollTimers = {};
   bool _isLoading = true;
+
+  int _selectedIndex = 1; // Set to 1 for Top Charts
 
   @override
   void initState() {
@@ -169,6 +177,21 @@ class _TopChartsPageState extends State<TopChartsPage> {
             ),
           ),
         ),
+        actions: [
+          IconButton(
+            icon: CircleAvatar(
+              child: Text(
+                widget.userEmail.isNotEmpty ? widget.userEmail[0].toUpperCase() : 'U',
+                style: TextStyle(color: Colors.blue),
+              ),
+              backgroundColor: Colors.white,
+            ),
+            onPressed: () {
+              // Show user info dialog (similar to ProductsPage)
+              _showUserInfoDialog();
+            },
+          ),
+        ],
       ),
       body: Container(
         color: Colors.blue[50], // Set the background color to light blue
@@ -210,6 +233,160 @@ class _TopChartsPageState extends State<TopChartsPage> {
                 },
               ),
       ),
+      bottomNavigationBar: BottomNavigationBar(
+        items: const <BottomNavigationBarItem>[
+          BottomNavigationBarItem(
+            icon: Icon(Icons.home),
+            label: 'Home',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.trending_up),
+            label: 'Top Charts',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.favorite),
+            label: 'Favorites',
+          ),
+          BottomNavigationBarItem(
+            icon: Icon(Icons.shopping_basket),
+            label: 'Purchases',
+          ),
+        ],
+        currentIndex: _selectedIndex,
+        onTap: _onItemTapped,
+        selectedItemColor: Colors.blue, // Color for the selected item
+        unselectedItemColor: Colors.grey, // Color for unselected items
+        showUnselectedLabels: true, // Show labels for unselected items
+        showSelectedLabels: true, // Show labels for selected item
+      ),
     );
+  }
+
+  void _showUserInfoDialog() {
+    String email = widget.userEmail;
+    String role = 'Customer'; // Hardcoded role
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Center(child: Text('Account Details')),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.email),
+                SizedBox(width: 10),
+                Text(email),
+              ],
+            ),
+            SizedBox(height: 10),
+            Row(
+              children: [
+                Icon(Icons.person),
+                SizedBox(width: 10),
+                Text(role),
+              ],
+            ),
+            SizedBox(height: 10),
+            TextButton(
+              onPressed: () async {
+                // Call logout API
+                final response = await http.put(
+                  Uri.parse('http://localhost:3100/api/v1/users/logout'),
+                  headers: {'Content-Type': 'application/json'},
+                );
+
+                if (response.statusCode == 200) {
+                  final responseData = json.decode(response.body);
+                  if (responseData['success']) {
+                    _showSuccessDialog("Logout successfully");
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => LoginPage()),
+                    );
+                  } else {
+                    _showSnackbar("Logout failed: ${responseData['message']}", Colors.red);
+                  }
+                } else {
+                  _showSnackbar("Logout failed: Server error", Colors.red);
+                }
+              },
+              child: Text('Logout', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Function to show success dialog
+  void _showSuccessDialog(String message) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Icon(Icons.check_circle, color: Colors.green, size: 50),
+        content: Text(message, textAlign: TextAlign.center),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('OK'),
+          ),
+        ],
+      ),
+    );
+  }
+
+  // Function to show snackbar
+  void _showSnackbar(String message, Color color) {
+    final snackBar = SnackBar(
+      content: Text(message),
+      backgroundColor: color,
+      duration: Duration(seconds: 2),
+    );
+
+    ScaffoldMessenger.of(context).showSnackBar(snackBar);
+  }
+
+  // Handle bottom navigation bar item taps
+  void _onItemTapped(int index) {
+    setState(() {
+      _selectedIndex = index;
+    });
+
+    // Navigate to the corresponding page
+    switch (index) {
+      case 0:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => ProductsPage(userEmail: widget.userEmail)),
+        );
+        break;
+      case 1:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => TopChartsPage(userEmail: widget.userEmail)),
+        );
+        break;
+      case 2:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => FavoritesPage(userEmail: widget.userEmail)),
+        );
+        break;
+      case 3:
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => PurchasesPage(userEmail: widget.userEmail)),
+        );
+        break;
+    }
   }
 }
