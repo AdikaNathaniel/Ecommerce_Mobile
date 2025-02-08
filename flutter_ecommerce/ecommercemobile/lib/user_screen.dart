@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'main.dart'; // Import your LoginPage
 
 class UserListScreen extends StatefulWidget {
+  final String userEmail; // Add userEmail parameter
+
+  UserListScreen({required this.userEmail}); // Update constructor to accept userEmail
+
   @override
   _UserListScreenState createState() => _UserListScreenState();
 }
@@ -65,6 +70,18 @@ class _UserListScreenState extends State<UserListScreen> {
             style: TextStyle(color: Colors.white),
           ),
         ),
+        actions: [
+          IconButton(
+            icon: CircleAvatar(
+              child: Text(
+                widget.userEmail.isNotEmpty ? widget.userEmail[0].toUpperCase() : 'U',
+                style: TextStyle(color: Colors.blue),
+              ),
+              backgroundColor: Colors.white,
+            ),
+            onPressed: () => _showUserInfoDialog(), // Show user info dialog
+          ),
+        ],
       ),
       body: Column(
         children: [
@@ -192,6 +209,86 @@ class _UserListScreenState extends State<UserListScreen> {
           Text(title, style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
           SizedBox(height: 5),
           Text(count.toString(), style: TextStyle(fontSize: 24, color: Colors.blue)),
+        ],
+      ),
+    );
+  }
+
+  void _showUserInfoDialog() {
+    String email = widget.userEmail; // Use the passed userEmail
+    String role = 'Admin'; // Hardcoded role
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Center(child: Text('Account Details')),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.email),
+                SizedBox(width: 10),
+                Text(email),
+              ],
+            ),
+            SizedBox(height: 10),
+            Row(
+              children: [
+                Icon(Icons.person),
+                SizedBox(width: 10),
+                Text(role),
+              ],
+            ),
+            SizedBox(height: 10),
+            TextButton(
+              onPressed: () async {
+                // Call logout API
+                final response = await http.put(
+                  Uri.parse('http://localhost:3100/api/v1/users/logout'),
+                  headers: {'Content-Type': 'application/json'},
+                );
+
+                if (response.statusCode == 200) {
+                  final responseData = json.decode(response.body);
+                  if (responseData['success']) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text("Logout successfully"),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => LoginPage()),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text("Logout failed: ${responseData['message']}"),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text("Logout failed: Server error"),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              },
+              child: Text('Logout', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Close'),
+          ),
         ],
       ),
     );

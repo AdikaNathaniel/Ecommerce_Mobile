@@ -68,7 +68,7 @@ class SummaryPage extends StatelessWidget {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => UserListScreen()),
+                  MaterialPageRoute(builder: (context) => UserListScreen(userEmail: userEmail)), // Pass userEmail to UserListScreen
                 );
               },
             ),
