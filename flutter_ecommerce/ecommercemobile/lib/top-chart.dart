@@ -157,7 +157,7 @@ class _TopChartsPageState extends State<TopChartsPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-       appBar: AppBar(
+      appBar: AppBar(
         automaticallyImplyLeading: false, // Remove back button
         backgroundColor: Colors.blue,
         title: Container(
@@ -170,43 +170,46 @@ class _TopChartsPageState extends State<TopChartsPage> {
           ),
         ),
       ),
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              itemCount: _categories.length,
-              itemBuilder: (context, index) {
-                String category = _categories[index];
-                return Padding(
-                  padding: const EdgeInsets.symmetric(vertical: 8.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Center(
-                          child: Text(
-                            category,
-                            style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.blue),
+      body: Container(
+        color: Colors.blue[50], // Set the background color to light blue
+        child: _isLoading
+            ? Center(child: CircularProgressIndicator())
+            : ListView.builder(
+                itemCount: _categories.length,
+                itemBuilder: (context, index) {
+                  String category = _categories[index];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.all(16.0),
+                          child: Center(
+                            child: Text(
+                              category,
+                              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 20, color: Colors.blue),
+                            ),
                           ),
                         ),
-                      ),
-                      SizedBox(
-                        height: 240, // Increased height for better presentation
-                        child: ListView.builder(
-                          controller: _scrollControllers[category],
-                          scrollDirection: Axis.horizontal,
-                          itemCount: _categoryProducts[category]?.length ?? 0,
-                          itemBuilder: (context, productIndex) {
-                            final product = _categoryProducts[category]![productIndex];
-                            return _buildProductCard(product);
-                          },
+                        SizedBox(
+                          height: 240, // Increased height for better presentation
+                          child: ListView.builder(
+                            controller: _scrollControllers[category],
+                            scrollDirection: Axis.horizontal,
+                            itemCount: _categoryProducts[category]?.length ?? 0,
+                            itemBuilder: (context, productIndex) {
+                              final product = _categoryProducts[category]![productIndex];
+                              return _buildProductCard(product);
+                            },
+                          ),
                         ),
-                      ),
-                    ],
-                  ),
-                );
-              },
-            ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+      ),
     );
   }
 }
