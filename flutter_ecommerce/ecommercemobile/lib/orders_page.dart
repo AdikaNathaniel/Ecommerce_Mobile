@@ -3,6 +3,7 @@ import 'package:flutter_stripe/flutter_stripe.dart' as stripe;
 import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'main.dart'; // Import your LoginPage
+import 'payment_screen.dart'; // Import PaymentScreen
 
 class OrdersPage extends StatelessWidget {
   final List<dynamic> orders;
@@ -85,7 +86,7 @@ class OrdersPage extends StatelessWidget {
                   Padding(
                     padding: EdgeInsets.all(16),
                     child: ElevatedButton(
-                      onPressed: () => _payWithStripe(context),
+                      onPressed: () => _payWithStripe(context), // Navigate to PaymentScreen
                       child: Text('Pay with Stripe'),
                       style: ElevatedButton.styleFrom(
                         backgroundColor: Colors.blue,
@@ -130,14 +131,6 @@ class OrdersPage extends StatelessWidget {
 
       // Check for successful payment intent creation (201 status)
       if (response.statusCode == 201) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Payment intent created successfully! (Status: 201)'),
-            backgroundColor: Colors.green,
-            duration: Duration(seconds: 2),
-          ),
-        );
-
         final responseData = json.decode(response.body);
         final clientSecret = responseData['client_secret'];
 
@@ -145,24 +138,14 @@ class OrdersPage extends StatelessWidget {
           throw Exception('Client secret not found in response');
         }
 
-        // Confirm the payment with Stripe
-        await stripe.Stripe.instance.confirmPayment(
-          paymentIntentClientSecret: clientSecret,
-          data: stripe.PaymentMethodParams.card(
-            paymentMethodData: stripe.PaymentMethodData(
-              billingDetails: stripe.BillingDetails(
-                email: userEmail,
-              ),
+        // Navigate to PaymentScreen
+        Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (context) => PaymentScreen(
+              clientSecret: clientSecret,
+              userEmail: userEmail,
             ),
-          ),
-        );
-
-        // Show final success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Payment processed successfully!'),
-            backgroundColor: Colors.green,
-            duration: Duration(seconds: 3),
           ),
         );
       } else {
