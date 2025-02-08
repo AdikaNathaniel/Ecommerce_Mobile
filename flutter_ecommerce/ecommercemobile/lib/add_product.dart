@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'main.dart'; // Import your LoginPage
 
 class AddProductPage extends StatefulWidget {
   final String userEmail;
@@ -20,7 +21,6 @@ class _AddProductPageState extends State<AddProductPage> {
   final _productUrlController = TextEditingController();
   final _downloadUrlController = TextEditingController();
   final _avgRatingController = TextEditingController();
-  // final _priceController = TextEditingController(); // Commented out
   final _highlightsController = TextEditingController();
 
   bool _isLoading = false;
@@ -37,7 +37,6 @@ class _AddProductPageState extends State<AddProductPage> {
     final productUrl = _productUrlController.text;
     final downloadUrl = _downloadUrlController.text;
     final avgRating = double.tryParse(_avgRatingController.text) ?? 0.0;
-    // final price = double.tryParse(_priceController.text) ?? 0.0; // Commented out
     final highlights = _highlightsController.text.split(',').map((e) => e.trim()).toList();
 
     // Validate input fields
@@ -47,8 +46,7 @@ class _AddProductPageState extends State<AddProductPage> {
         category == null ||
         platformType == null ||
         baseType.isEmpty ||
-        // price.isNaN) { // Commented out
-        highlights.isEmpty) { // Added highlights check
+        highlights.isEmpty) {
       _showSnackbar("All fields are required!", Colors.red);
       return;
     }
@@ -58,14 +56,9 @@ class _AddProductPageState extends State<AddProductPage> {
     });
 
     final url = Uri.parse('http://localhost:3100/api/v1/products');
-
-    // Logging for debugging
-    print('Email: ${widget.userEmail}');
-    print('Password: ${widget.userPassword}');
-
     final headers = {
       'Content-Type': 'application/json',
-      'Role': 'Seller', // Adding the custom role header
+      'Role': 'Seller',
     };
 
     final body = json.encode({
@@ -78,7 +71,6 @@ class _AddProductPageState extends State<AddProductPage> {
       'productUrl': productUrl,
       'downloadUrl': downloadUrl,
       'avgRating': avgRating,
-      // 'price': price, // Commented out
       'highlights': highlights,
       'createdAt': DateTime.now().toIso8601String(),
       'updatedAt': DateTime.now().toIso8601String(),
@@ -116,7 +108,7 @@ class _AddProductPageState extends State<AddProductPage> {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Icon(Icons.check_circle, size: 80, color: Colors.green), // Green tick
+              Icon(Icons.check_circle, size: 80, color: Colors.green),
               SizedBox(height: 10),
               Text(
                 "Product Successfully Added!",
@@ -129,7 +121,7 @@ class _AddProductPageState extends State<AddProductPage> {
                   Navigator.pop(context); // Close dialog
                   Navigator.pop(context); // Return to previous screen
                 },
-                style: ElevatedButton.styleFrom(backgroundColor: Colors.green), // Green button
+                style: ElevatedButton.styleFrom(backgroundColor: Colors.green),
                 child: Text("OK", style: TextStyle(color: Colors.white)),
               ),
             ],
@@ -149,6 +141,71 @@ class _AddProductPageState extends State<AddProductPage> {
     );
   }
 
+  void _showUserInfoDialog(BuildContext context) {
+    String email = widget.userEmail; 
+    String role = 'Seller'; // Hardcoded role
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Center(child: Text('Account Details')),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.email),
+                SizedBox(width: 10),
+                Text(email),
+              ],
+            ),
+            SizedBox(height: 10),
+            Row(
+              children: [
+                Icon(Icons.person),
+                SizedBox(width: 10),
+                Text(role),
+              ],
+            ),
+            SizedBox(height: 10),
+            TextButton(
+              onPressed: () async {
+                // Call logout API
+                final response = await http.put(
+                  Uri.parse('http://localhost:3100/api/v1/users/logout'),
+                  headers: {'Content-Type': 'application/json'},
+                );
+
+                if (response.statusCode == 200) {
+                  final responseData = json.decode(response.body);
+                  if (responseData['success']) {
+                    _showSnackbar("Logout successfully", Colors.green);
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => LoginPage()),
+                    );
+                  } else {
+                    _showSnackbar("Logout failed: ${responseData['message']}", Colors.red);
+                  }
+                } else {
+                  _showSnackbar("Logout failed: Server error", Colors.red);
+                }
+              },
+              child: Text('Logout', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -160,6 +217,18 @@ class _AddProductPageState extends State<AddProductPage> {
             style: TextStyle(color: Colors.white),
           ),
         ),
+        actions: [
+          IconButton(
+            icon: CircleAvatar(
+              child: Text(
+                widget.userEmail.isNotEmpty ? widget.userEmail[0].toUpperCase() : 'U',
+                style: TextStyle(color: Colors.blue),
+              ),
+              backgroundColor: Colors.white,
+            ),
+            onPressed: () => _showUserInfoDialog(context), // Show user info dialog
+          ),
+        ],
       ),
       body: Padding(
         padding: const EdgeInsets.all(16.0),

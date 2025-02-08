@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
       theme: ThemeData(
         primarySwatch: Colors.blue,
       ),
-      home: LoginPage(),
+      home: SplashScreen(), // Set SplashScreen as the home
       routes: {
         '/register': (context) => RegisterPage(), // Define the route for RegisterPage
       },
@@ -34,6 +34,52 @@ class MyApp extends StatelessWidget {
     );
   }
 }
+
+class SplashScreen extends StatefulWidget {
+  @override
+  _SplashScreenState createState() => _SplashScreenState();
+}
+
+class _SplashScreenState extends State<SplashScreen> {
+  @override
+  void initState() {
+    super.initState();
+    Future.delayed(Duration(seconds: 7), () {
+      Navigator.of(context).pushReplacement(
+        MaterialPageRoute(builder: (context) => LoginPage()),
+      );
+    });
+  }
+
+    @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.blue, // Blue background
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Image.asset(
+              'DigizoneEcommerce.png', // Ensure this path is correct
+              width: 150, // Adjust the size as needed
+              height: 150, // Adjust the size as needed
+            ),
+            SizedBox(height: 20), // Space beneath the image
+            Text(
+              "Gamer's Hub",
+              style: TextStyle(
+                fontSize: 24,
+                fontWeight: FontWeight.bold,
+                color: Colors.white, // Text color
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
 
 class LoginPage extends StatefulWidget {
   @override
