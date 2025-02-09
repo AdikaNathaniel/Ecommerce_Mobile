@@ -305,8 +305,9 @@ export class UsersService {
 
   private async generateAndSendOtp(email: string) {
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    // Increased expiry time to 10 minutes
     const otpExpiryTime = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
-
+  
     await this.userDB.updateOne(
       { email },
       {
@@ -314,7 +315,7 @@ export class UsersService {
         otpExpiryTime,
       },
     );
-
+  
     // Send OTP via notification service
     try {
       const response = await firstValueFrom(
@@ -331,4 +332,7 @@ export class UsersService {
       );
     }
   }
+
+
+
 }
