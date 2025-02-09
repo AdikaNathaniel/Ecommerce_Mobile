@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'main.dart'; // Import your LoginPage
 
 class ChatPage extends StatefulWidget {
   final String userEmail;
@@ -15,6 +16,44 @@ class _ChatPageState extends State<ChatPage> {
   TextEditingController _messageController = TextEditingController();
   TextEditingController _receiverEmailController = TextEditingController();
   bool _isLoading = false;
+  List<dynamic> _users = [];
+  List<dynamic> _admins = [];
+  List<dynamic> _sellers = [];
+
+  @override
+  void initState() {
+    super.initState();
+    fetchUsers();
+  }
+
+  Future<void> fetchUsers() async {
+    try {
+      final customerResponse = await http.get(Uri.parse('http://localhost:3100/api/v1/users?type=customer'));
+      final sellerResponse = await http.get(Uri.parse('http://localhost:3100/api/v1/users?type=seller'));
+      final adminResponse = await http.get(Uri.parse('http://localhost:3100/api/v1/users?type=admin'));
+
+      if (customerResponse.statusCode == 200) {
+        final data = json.decode(customerResponse.body);
+        setState(() {
+          _users = data['result'].take(2).toList(); // Get the first two customers
+        });
+      }
+      if (sellerResponse.statusCode == 200) {
+        final data = json.decode(sellerResponse.body);
+        setState(() {
+          _sellers = data['result'].take(2).toList(); // Get the first two sellers
+        });
+      }
+      if (adminResponse.statusCode == 200) {
+        final data = json.decode(adminResponse.body);
+        setState(() {
+          _admins = data['result'].take(2).toList(); // Get the first two admins
+        });
+      }
+    } catch (e) {
+      print('Error fetching users: $e');
+    }
+  }
 
   Future<void> _sendMessage() async {
     setState(() {
@@ -110,6 +149,10 @@ class _ChatPageState extends State<ChatPage> {
                       label: Text('Send Message'),
                       style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
                     ),
+              SizedBox(height: 16),
+              _buildUserList('Customers', _users),
+              _buildUserList('Sellers', _sellers),
+              _buildUserList('Admins', _admins),
             ],
           ),
         ),
@@ -122,6 +165,27 @@ class _ChatPageState extends State<ChatPage> {
       labelText: label,
       prefixIcon: Icon(icon, color: Colors.blue),
       border: OutlineInputBorder(),
+    );
+  }
+
+  Widget _buildUserList(String title, List<dynamic> userList) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+        SizedBox(height: 8),
+        ...userList.map((user) {
+          return Card(
+            margin: EdgeInsets.symmetric(vertical: 5),
+            child: ListTile(
+              title: Text(user['name']),
+              subtitle: Text(user['email']),
+              leading: Icon(Icons.person),
+            ),
+          );
+        }).toList(),
+        SizedBox(height: 16),
+      ],
     );
   }
 
