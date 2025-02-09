@@ -149,6 +149,11 @@ class _ChatPageState extends State<ChatPage> {
                       label: Text('Send Message'),
                       style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
                     ),
+              SizedBox(height: 8), // Adjusted spacing
+              Text(
+                'Send a message to one of the following emails:',
+                style: TextStyle(fontSize: 16, color: Colors.black54),
+              ),
               SizedBox(height: 16),
               _buildUserList('Customers', _users),
               _buildUserList('Sellers', _sellers),
@@ -172,15 +177,41 @@ class _ChatPageState extends State<ChatPage> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(title, style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
-        SizedBox(height: 8),
         ...userList.map((user) {
           return Card(
             margin: EdgeInsets.symmetric(vertical: 5),
             child: ListTile(
-              title: Text(user['name']),
-              subtitle: Text(user['email']),
-              leading: Icon(Icons.person),
+              title: Row(
+                children: [
+                  Expanded(
+                    child: Text(user['name']),
+                  ),
+                  Container(
+                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.blueAccent,
+                      borderRadius: BorderRadius.circular(10),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(Icons.group, color: Colors.white, size: 16),
+                        SizedBox(width: 4),
+                        Text(
+                          user['type'].toUpperCase(),
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+              subtitle: Row(
+                children: [
+                  Icon(Icons.email, color: Colors.grey),
+                  SizedBox(width: 5),
+                  Expanded(child: Text(user['email'])),
+                ],
+              ),
             ),
           );
         }).toList(),
