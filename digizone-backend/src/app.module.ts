@@ -20,6 +20,9 @@ import { MQService } from 'src/delivery/mq.service';
 // Import ChatModule and Chat schema
 import { Chat, ChatSchema } from 'src/shared/schema/chat.schema';
 import { ChatModule } from './chat/chat.module';
+// Import EmailModule and NotificationModule
+import { EmailModule } from 'src/email/email.module'; // Adjust the path as necessary
+import { NotificationModule } from 'src/notification/notification.module'; // Adjust the path as necessary
 
 @Module({
   imports: [
@@ -40,6 +43,8 @@ import { ChatModule } from './chat/chat.module';
     MongooseModule.forFeature([{ name: Delivery.name, schema: DeliverySchema }]), // Add Delivery Schema
     ChatModule, // Add ChatModule here
     MongooseModule.forFeature([{ name: Chat.name, schema: ChatSchema }]), // Add Chat Schema if needed
+    EmailModule, // Add EmailModule here
+    NotificationModule, // Add NotificationModule here
   ],
   controllers: [AppController, DeliveryController], // Add DeliveryController
   providers: [AppService, DeliveryService, MQService], // Add DeliveryService and MQService

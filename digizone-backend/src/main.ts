@@ -1,4 +1,7 @@
 import { NestFactory } from '@nestjs/core';
+import { NotificationModule } from 'src/notification/notification.module';
+import { MicroserviceOptions, Transport } from '@nestjs/microservices';
+import { EmailModule } from 'src/email/email.module';
 import { AppModule } from './app.module';
 import config from 'config';
 import { TransformationInterceptor } from './responseInterceptor';
@@ -29,6 +32,8 @@ function isPathIgnored(path: string): boolean {
 }
 
 let app: any;
+let notificationApp: any;
+let emailMicroservice: any;
 
 async function bootstrap() {
   if (!app) {
@@ -83,6 +88,33 @@ async function bootstrap() {
       throw error;
     }
   }
+
+  // Bootstrapping the Notification Module
+  if (!notificationApp) {
+    notificationApp = await NestFactory.create(NotificationModule);
+    await notificationApp.listen(3001);
+    console.log('Notification service running on port 3001');
+  }
+
+  // Bootstrapping the Email Microservice
+  if (!emailMicroservice) {
+    emailMicroservice = await NestFactory.createMicroservice<MicroserviceOptions>(
+      EmailModule,
+      {
+        transport: Transport.RMQ,
+        options: {
+          urls: [process.env.RABBITMQ_URL || 'amqp://localhost:5672'],
+          queue: 'email_queue',
+          queueOptions: {
+            durable: true,
+          },
+        },
+      },
+    );
+    await emailMicroservice.listen();
+    console.log('Email microservice is listening for messages');
+  }
+
   return app;
 }
 

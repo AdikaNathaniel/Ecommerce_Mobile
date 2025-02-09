@@ -12,6 +12,7 @@ import { Users, UserSchema } from 'src/shared/schema/users';
 import { APP_GUARD } from '@nestjs/core';
 import { RolesGuard } from 'src/shared/middleware/roles.guard';
 import { AuthMiddleware } from 'src/shared/middleware/auth';
+import { HttpModule } from '@nestjs/axios'; // ✅ Ensure HttpModule is imported
 
 @Module({
   controllers: [UsersController],
@@ -24,6 +25,7 @@ import { AuthMiddleware } from 'src/shared/middleware/auth';
     },
   ],
   imports: [
+    HttpModule, // ✅ Add HttpModule here to fix HttpService injection issue
     MongooseModule.forFeature([
       {
         name: Users.name,

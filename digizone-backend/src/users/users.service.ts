@@ -10,19 +10,26 @@ import {
 } from 'src/shared/utility/password-manager';
 import { sendEmail } from 'src/shared/utility/mail-handler';
 import { generateAuthToken } from 'src/shared/utility/token-generator';
+import { HttpService } from '@nestjs/axios';
+import { HttpException } from '@nestjs/common';
+import { HttpStatus } from '@nestjs/common';
+import { firstValueFrom } from 'rxjs';
+
 @Injectable()
 export class UsersService {
   constructor(
     @Inject(UserRepository) private readonly userDB: UserRepository,
+    private readonly httpService: HttpService,
   ) {}
+
   async create(createUserDto: CreateUserDto) {
     try {
-      // generate the hash password
+      // Generate the hash password
       createUserDto.password = await generateHashPassword(
         createUserDto.password,
       );
 
-      /// check is it for admin
+      // Check if it is for admin
       if (
         createUserDto.type === userTypes.ADMIN &&
         createUserDto.secretToken !== config.get('adminSecretToken')
@@ -32,25 +39,22 @@ export class UsersService {
         createUserDto.isVerified = true;
       }
 
-      // user is already exist
+      // User already exists
       const user = await this.userDB.findOne({
         email: createUserDto.email,
       });
       if (user) {
-        throw new Error('User already exist');
+        throw new Error('User already exists');
       }
 
-      // generate the otp
-      const otp = Math.floor(Math.random() * 900000) + 100000;
-
-      const otpExpiryTime = new Date();
-      otpExpiryTime.setMinutes(otpExpiryTime.getMinutes() + 10);
+      // Generate and send OTP
+      const otp = await this.generateAndSendOtp(createUserDto.email);
 
       const newUser = await this.userDB.create({
         ...createUserDto,
         otp,
-        otpExpiryTime,
       });
+
       if (newUser.type !== userTypes.ADMIN) {
         sendEmail(
           newUser.email,
@@ -63,12 +67,13 @@ export class UsersService {
           },
         );
       }
+
       return {
         success: true,
         message:
           newUser.type === userTypes.ADMIN
             ? 'Admin created successfully'
-            : 'Please activate your account by verifying your email. We have sent you a wmail with the otp',
+            : 'Please activate your account by verifying your email. We have sent you a mail with the OTP.',
         result: { email: newUser.email },
       };
     } catch (error) {
@@ -123,10 +128,10 @@ export class UsersService {
         throw new Error('User not found');
       }
       if (user.otp !== otp) {
-        throw new Error('Invalid otp');
+        throw new Error('Invalid OTP');
       }
       if (user.otpExpiryTime < new Date()) {
-        throw new Error('Otp expired');
+        throw new Error('OTP expired');
       }
       await this.userDB.updateOne(
         {
@@ -139,7 +144,7 @@ export class UsersService {
 
       return {
         success: true,
-        message: 'Email verified successfully. you can login now',
+        message: 'Email verified successfully. You can log in now.',
       };
     } catch (error) {
       throw error;
@@ -157,36 +162,14 @@ export class UsersService {
       if (user.isVerified) {
         throw new Error('Email already verified');
       }
-      const otp = Math.floor(Math.random() * 900000) + 100000;
 
-      const otpExpiryTime = new Date();
-      otpExpiryTime.setMinutes(otpExpiryTime.getMinutes() + 10);
-
-      await this.userDB.updateOne(
-        {
-          email,
-        },
-        {
-          otp,
-          otpExpiryTime,
-        },
-      );
-
-      sendEmail(
-        user.email,
-        config.get('emailService.emailTemplates.verifyEmail'),
-        'Email verification - Digizone',
-        {
-          customerName: user.name,
-          customerEmail: user.email,
-          otp,
-        },
-      );
+      // Generate and send OTP
+      const otp = await this.generateAndSendOtp(email);
 
       return {
         success: true,
-        message: 'Otp sent successfully',
-        result: { email: user.email },
+        message: 'OTP sent successfully',
+        result: { email },
       };
     } catch (error) {
       throw error;
@@ -238,7 +221,7 @@ export class UsersService {
   async findAll(type: string) {
     try {
       const users = await this.userDB.find({ type });
-  
+
       // Structure response to include user details
       const userList = users.map(user => ({
         id: user._id.toString(),
@@ -246,9 +229,8 @@ export class UsersService {
         email: user.email,
         type: user.type,
         isVerified: user.isVerified,
-        // createdAt: user.createdAt,
       }));
-  
+
       return {
         success: true,
         message: 'Users fetched successfully',
@@ -258,7 +240,6 @@ export class UsersService {
       throw error;
     }
   }
-  
 
   async updatePasswordOrName(
     id: string,
@@ -320,5 +301,34 @@ export class UsersService {
 
   remove(id: number) {
     return `This action removes a #${id} user`;
+  }
+
+  private async generateAndSendOtp(email: string) {
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    const otpExpiryTime = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+
+    await this.userDB.updateOne(
+      { email },
+      {
+        otp,
+        otpExpiryTime,
+      },
+    );
+
+    // Send OTP via notification service
+    try {
+      const response = await firstValueFrom(
+        this.httpService.post('http://localhost:3001/notifications/send-otp', {
+          email,
+          otp,
+        }),
+      );
+      return otp;
+    } catch (error) {
+      throw new HttpException(
+        'Failed to send OTP',
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
+    }
   }
 }

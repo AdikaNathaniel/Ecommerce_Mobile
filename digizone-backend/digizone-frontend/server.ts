@@ -1,6 +1,6 @@
 import express from 'express';
 import next from 'next';
-import { createProxyMiddleware } from 'http-proxy-middleware';
+import createProxyMiddleware from 'http-proxy-middleware';
 
 const dev = process.env.NODE_ENV !== 'production';
 const app = next({ dev });
