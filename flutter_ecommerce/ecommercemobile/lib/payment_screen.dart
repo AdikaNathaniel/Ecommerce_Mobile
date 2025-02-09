@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_stripe/flutter_stripe.dart' as stripe;
 import 'orders_page.dart'; // Import OrdersPage
+import 'delivery_tracker.dart'; // Import DeliveryTracker
 
 class PaymentScreen extends StatefulWidget {
   final String clientSecret;
@@ -213,8 +214,12 @@ class _PaymentScreenState extends State<PaymentScreen> {
           actions: [
             TextButton(
               onPressed: () {
-                Navigator.of(context).pop();
-                Navigator.of(context).pop(true); // Close the screen after success
+                Navigator.of(context).pop(); // Close the dialog
+                Navigator.of(context).pushReplacement(
+                  MaterialPageRoute(
+                    builder: (context) => DeliveryTracker(userEmail: widget.userEmail),
+                  ),
+                ); // Navigate to DeliveryTracker
               },
               child: Text('OK'),
             ),

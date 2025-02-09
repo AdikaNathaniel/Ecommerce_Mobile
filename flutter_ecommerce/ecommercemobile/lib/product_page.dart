@@ -9,7 +9,7 @@ import 'cart_details.dart'; // Import your MyCartPage
 import 'main.dart'; // Import your LoginPage
 import 'top-chart.dart'; // Ensure these imports point to the correct files
 import 'favorite.dart';
-import 'purchases.dart';
+import 'purchases.dart'; // Import PurchasesPage
 
 class ProductsPage extends StatefulWidget {
   final String userEmail;
@@ -174,10 +174,18 @@ class _ProductsPageState extends State<ProductsPage> {
       final response = await http.get(Uri.parse('http://localhost:3100/api/v1/orders?email=${widget.userEmail}'));
       if (response.statusCode == 200) {
         final data = json.decode(response.body);
+        List<dynamic> orders = data['result'];
+
+        // Get the last 10 orders
+        List<dynamic> lastTenOrders = orders.take(10).toList();
+
         Navigator.push(
           context,
           MaterialPageRoute(
-            builder: (context) => OrdersPage(orders: data['result'], userEmail: widget.userEmail), // Pass userEmail and fetched orders
+            builder: (context) => PurchasesPage(
+              orders: lastTenOrders, // Pass the last 10 orders to PurchasesPage
+              userEmail: widget.userEmail,
+            ),
           ),
         );
       } else {
@@ -215,16 +223,7 @@ class _ProductsPageState extends State<ProductsPage> {
         );
         break;
       case 3:
-        // Here, you need to provide the orders list when navigating to PurchasesPage.
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(
-            builder: (context) => PurchasesPage(
-              orders: [], // You need to replace this with the actual orders list
-              userEmail: widget.userEmail,
-            ),
-          ),
-        );
+        _navigateToOrdersPage(); // Call to navigate to purchases page
         break;
     }
   }

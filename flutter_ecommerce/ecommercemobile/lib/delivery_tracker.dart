@@ -4,19 +4,13 @@ import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-
-void main() {
-  runApp(MyApp());
-}
-
-class MyApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(home: DeliveryTracker());
-  }
-}
+import 'main.dart'; // Import your LoginPage
 
 class DeliveryTracker extends StatefulWidget {
+  final String userEmail;
+
+  DeliveryTracker({Key? key, required this.userEmail}) : super(key: key);
+
   @override
   _DeliveryTrackerState createState() => _DeliveryTrackerState();
 }
@@ -24,7 +18,7 @@ class DeliveryTracker extends StatefulWidget {
 class _DeliveryTrackerState extends State<DeliveryTracker> {
   GoogleMapController? _mapController;
   LatLng _currentLocation = LatLng(0, 0);
-  String driverId = 'DriverOne'; 
+  String driverId = 'DriverOne';
   Timer? _timer;
 
   @override
@@ -34,20 +28,17 @@ class _DeliveryTrackerState extends State<DeliveryTracker> {
   }
 
   Future<void> _checkPermissions() async {
-    // Check location permissions first
     LocationPermission permission = await Geolocator.checkPermission();
     if (permission == LocationPermission.denied) {
       permission = await Geolocator.requestPermission();
       if (permission == LocationPermission.denied) {
-        // Handle denied permissions
         return;
       }
     }
-    
-    // Get initial position
+
     try {
       Position position = await Geolocator.getCurrentPosition(
-        desiredAccuracy: LocationAccuracy.high
+        desiredAccuracy: LocationAccuracy.high,
       );
       setState(() {
         _currentLocation = LatLng(position.latitude, position.longitude);
@@ -62,18 +53,18 @@ class _DeliveryTrackerState extends State<DeliveryTracker> {
     _timer = Timer.periodic(Duration(seconds: 30), (timer) async {
       try {
         Position position = await Geolocator.getCurrentPosition(
-          desiredAccuracy: LocationAccuracy.high
+          desiredAccuracy: LocationAccuracy.high,
         );
-        
+
         setState(() {
           _currentLocation = LatLng(position.latitude, position.longitude);
         });
 
         await _sendLocationUpdate(position);
-        
+
         if (_mapController != null) {
           _mapController!.animateCamera(
-            CameraUpdate.newLatLng(_currentLocation)
+            CameraUpdate.newLatLng(_currentLocation),
           );
         }
       } catch (e) {
@@ -91,7 +82,7 @@ class _DeliveryTrackerState extends State<DeliveryTracker> {
         },
         body: jsonEncode({
           'driverId': driverId,
-          'location': [position.longitude, position.latitude]
+          'location': [position.longitude, position.latitude],
         }),
       );
 
@@ -106,15 +97,117 @@ class _DeliveryTrackerState extends State<DeliveryTracker> {
     }
   }
 
+  void _showUserInfoDialog() {
+    String email = widget.userEmail;
+    String role = 'Customer'; // Hardcoded role
+
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Center(child: Text('Account Details')),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(Icons.email),
+                SizedBox(width: 10),
+                Text(email),
+              ],
+            ),
+            SizedBox(height: 10),
+            Row(
+              children: [
+                Icon(Icons.person),
+                SizedBox(width: 10),
+                Text(role),
+              ],
+            ),
+            SizedBox(height: 10),
+            TextButton(
+              onPressed: () async {
+                final response = await http.put(
+                  Uri.parse('http://localhost:3100/api/v1/users/logout'),
+                  headers: {'Content-Type': 'application/json'},
+                );
+
+                if (response.statusCode == 200) {
+                  final responseData = json.decode(response.body);
+                  if (responseData['success']) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text("Logout successfully"),
+                        backgroundColor: Colors.green,
+                      ),
+                    );
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (context) => LoginPage()),
+                    );
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text("Logout failed: ${responseData['message']}"),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text("Logout failed: Server error"),
+                      backgroundColor: Colors.red,
+                    ),
+                  );
+                }
+              },
+              child: Text('Logout', style: TextStyle(color: Colors.red)),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: Text('Close'),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Delivery Tracker')),
+      appBar: AppBar(
+        backgroundColor: Colors.blue,
+        title: Container(
+          width: double.infinity,
+          child: Center(
+            child: Text(
+              'Delivery Tracker',
+              style: TextStyle(color: Colors.white),
+            ),
+          ),
+        ),
+        actions: [
+          IconButton(
+            icon: CircleAvatar(
+              child: Text(
+                widget.userEmail.isNotEmpty ? widget.userEmail[0].toUpperCase() : 'U',
+                style: TextStyle(color: Colors.blue),
+              ),
+              backgroundColor: Colors.white,
+            ),
+            onPressed: _showUserInfoDialog, // Corrected this line
+          ),
+        ],
+      ),
       body: GoogleMap(
         onMapCreated: (controller) {
           _mapController = controller;
           _mapController?.moveCamera(
-            CameraUpdate.newLatLng(_currentLocation)
+            CameraUpdate.newLatLng(_currentLocation),
           );
         },
         initialCameraPosition: CameraPosition(
