@@ -9,6 +9,7 @@ import 'summary_page.dart'; // Import SummaryPage
 import 'product_page.dart';
 import 'delivery_management.dart'; // Import DeliveryManagementPage
 import 'delivery_tracker.dart';
+import 'chat_page.dart'; // Import ChatPage
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -136,8 +137,9 @@ class _LoginPageState extends State<LoginPage> {
             MaterialPageRoute(
               // builder: (context) => DeliveryTrackingScreen(productName: 'Your Product Name'), 
               // Provide a product name
-               builder: (context) => ProductsPage(userEmail: email),
+                 builder: (context) => ProductsPage(userEmail: email),
               // builder: (context) => DeliveryTracker(),
+              // builder: (context) => ChatPage(userEmail: email),
              
             ),
           );

@@ -10,6 +10,7 @@ import 'main.dart'; // Import your LoginPage
 import 'top-chart.dart'; // Ensure these imports point to the correct files
 import 'favorite.dart';
 import 'purchases.dart'; // Import PurchasesPage
+import 'chat_page.dart';
 
 class ProductsPage extends StatefulWidget {
   final String userEmail;
@@ -286,6 +287,16 @@ class _ProductsPageState extends State<ProductsPage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => MyCartPage(userEmail: widget.userEmail)),
+                );
+              },
+            ),
+             ListTile(
+              leading: Icon(Icons.chat),
+              title: Text('In the Mood To Chat?'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ChatPage(userEmail: widget.userEmail)),
                 );
               },
             ),
