@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
-import 'main.dart'; // Import your LoginPage
+import 'main.dart';
 
 class ChatPage extends StatefulWidget {
   final String userEmail;
@@ -35,19 +35,19 @@ class _ChatPageState extends State<ChatPage> {
       if (customerResponse.statusCode == 200) {
         final data = json.decode(customerResponse.body);
         setState(() {
-          _users = data['result'].take(2).toList(); // Get the first two customers
+          _users = data['result'].take(2).toList();
         });
       }
       if (sellerResponse.statusCode == 200) {
         final data = json.decode(sellerResponse.body);
         setState(() {
-          _sellers = data['result'].take(2).toList(); // Get the first two sellers
+          _sellers = data['result'].take(2).toList();
         });
       }
       if (adminResponse.statusCode == 200) {
         final data = json.decode(adminResponse.body);
         setState(() {
-          _admins = data['result'].take(2).toList(); // Get the first two admins
+          _admins = data['result'].take(2).toList();
         });
       }
     } catch (e) {
@@ -94,7 +94,6 @@ class _ChatPageState extends State<ChatPage> {
       backgroundColor: color,
       duration: Duration(seconds: 2),
     );
-
     ScaffoldMessenger.of(context).showSnackBar(snackBar);
   }
 
@@ -103,15 +102,11 @@ class _ChatPageState extends State<ChatPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: Colors.blue,
-        title: Container(
-          width: double.infinity,
-          child: Center(
-            child: Text(
-              'Chat Page',
-              style: TextStyle(color: Colors.white),
-            ),
-          ),
+        title: Text(
+          'Chat Page',
+          style: TextStyle(color: Colors.white),
         ),
+        centerTitle: true,
         actions: [
           IconButton(
             icon: CircleAvatar(
@@ -121,7 +116,7 @@ class _ChatPageState extends State<ChatPage> {
               ),
               backgroundColor: Colors.white,
             ),
-            onPressed: _showUserInfoDialog, // Show user info dialog
+            onPressed: _showUserInfoDialog,
           ),
         ],
       ),
@@ -129,6 +124,7 @@ class _ChatPageState extends State<ChatPage> {
         padding: const EdgeInsets.all(16.0),
         child: SingleChildScrollView(
           child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               TextField(
                 controller: _receiverEmailController,
@@ -142,17 +138,18 @@ class _ChatPageState extends State<ChatPage> {
               ),
               SizedBox(height: 16),
               _isLoading
-                  ? CircularProgressIndicator()
+                  ? Center(child: CircularProgressIndicator())
                   : ElevatedButton.icon(
                       onPressed: _sendMessage,
                       icon: Icon(Icons.send),
                       label: Text('Send Message'),
                       style: ElevatedButton.styleFrom(backgroundColor: Colors.blue),
                     ),
-              SizedBox(height: 8), // Adjusted spacing
+              SizedBox(height: 16),
               Text(
                 'Send a message to one of the following emails:',
                 style: TextStyle(fontSize: 16, color: Colors.black54),
+                textAlign: TextAlign.center,
               ),
               SizedBox(height: 16),
               _buildUserList('Customers', _users),
@@ -181,35 +178,52 @@ class _ChatPageState extends State<ChatPage> {
           return Card(
             margin: EdgeInsets.symmetric(vertical: 5),
             child: ListTile(
-              title: Row(
+              title: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Text(user['name']),
-                  ),
-                  Container(
-                    padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                    decoration: BoxDecoration(
-                      color: Colors.blueAccent,
-                      borderRadius: BorderRadius.circular(10),
-                    ),
-                    child: Row(
-                      children: [
-                        Icon(Icons.group, color: Colors.white, size: 16),
-                        SizedBox(width: 4),
-                        Text(
-                          user['type'].toUpperCase(),
-                          style: TextStyle(color: Colors.white),
+                  Row(
+                    children: [
+                      Expanded(
+                        child: Text(
+                          user['name'],
+                          overflow: TextOverflow.ellipsis,
                         ),
-                      ],
-                    ),
+                      ),
+                      Container(
+                        padding: EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.blueAccent,
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.group, color: Colors.white, size: 16),
+                            SizedBox(width: 4),
+                            Text(
+                              user['type'].toString().toUpperCase(),
+                              style: TextStyle(
+                                color: Colors.white,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
               subtitle: Row(
                 children: [
-                  Icon(Icons.email, color: Colors.grey),
-                  SizedBox(width: 5),
-                  Expanded(child: Text(user['email'])),
+                  Icon(Icons.email, color: Colors.grey, size: 16),
+                  SizedBox(width: 4),
+                  Expanded(
+                    child: Text(
+                      user['email'],
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
                 ],
               ),
             ),
@@ -224,7 +238,7 @@ class _ChatPageState extends State<ChatPage> {
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
-        title: Center(child: Text('Account Details')),
+        title: Text('Account Details', textAlign: TextAlign.center),
         content: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
@@ -232,15 +246,18 @@ class _ChatPageState extends State<ChatPage> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Icon(Icons.email),
-                SizedBox(width: 10),
-                Text(widget.userEmail),
+                SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    widget.userEmail,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
               ],
             ),
-            SizedBox(height: 10),
+            SizedBox(height: 16),
             TextButton(
-              onPressed: () {
-                Navigator.pop(context);
-              },
+              onPressed: () => Navigator.pop(context),
               child: Text('Close'),
             ),
           ],
