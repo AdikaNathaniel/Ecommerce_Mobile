@@ -11,6 +11,7 @@ import 'top-chart.dart'; // Ensure these imports point to the correct files
 import 'favorite.dart';
 import 'purchases.dart'; // Import PurchasesPage
 import 'chat_page.dart';
+import 'chat_messages.dart';
 
 class ProductsPage extends StatefulWidget {
   final String userEmail;
@@ -297,6 +298,16 @@ class _ProductsPageState extends State<ProductsPage> {
                 Navigator.push(
                   context,
                   MaterialPageRoute(builder: (context) => ChatPage(userEmail: widget.userEmail)),
+                );
+              },
+            ),
+             ListTile(
+              leading: Icon(Icons.chat),
+              title: Text('View Your Messages'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ChatMessagesPage(userEmail: widget.userEmail)),
                 );
               },
             ),
