@@ -8,6 +8,7 @@ import 'user_screen.dart'; // Import UserListScreen
 import 'summary_page.dart'; // Import SummaryPage
 import 'product_page.dart';
 import 'delivery_management.dart'; // Import DeliveryManagementPage
+import 'delivery_tracker.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -51,7 +52,7 @@ class _SplashScreenState extends State<SplashScreen> {
     });
   }
 
-    @override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.blue, // Blue background
@@ -79,7 +80,6 @@ class _SplashScreenState extends State<SplashScreen> {
     );
   }
 }
-
 
 class LoginPage extends StatefulWidget {
   @override
@@ -120,7 +120,7 @@ class _LoginPageState extends State<LoginPage> {
 
       if (response.statusCode == 200 && responseData['success']) {
         _showSnackbar("Login successful", Colors.green);
-        
+
         if (userType.toLowerCase() == 'seller') {
           // Navigate to the Add Products Page for sellers
           Navigator.pushReplacement(
@@ -134,7 +134,11 @@ class _LoginPageState extends State<LoginPage> {
           Navigator.pushReplacement(
             context,
             MaterialPageRoute(
-              builder: (context) => ProductsPage(userEmail: email),
+              // builder: (context) => DeliveryTrackingScreen(productName: 'Your Product Name'), 
+              // Provide a product name
+               builder: (context) => ProductsPage(userEmail: email),
+              // builder: (context) => DeliveryTracker(),
+             
             ),
           );
         } else if (userType.toLowerCase() == 'admin') {

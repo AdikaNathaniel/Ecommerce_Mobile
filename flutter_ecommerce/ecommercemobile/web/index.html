@@ -1,19 +1,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <!--
-    If you are serving your web app in a path other than the root, change the
-    href value below to reflect the base path you are serving from.
-
-    The path provided below has to start and end with a slash "/" in order for
-    it to work correctly.
-
-    For more details:
-    * https://developer.mozilla.org/en-US/docs/Web/HTML/Element/base
-
-    This is a placeholder for base href that will be replaced by the value of
-    the `--base-href` argument provided to `flutter build`.
-  -->
   <base href="$FLUTTER_BASE_HREF">
 
   <meta charset="UTF-8">
@@ -34,5 +21,15 @@
 </head>
 <body>
   <script src="flutter_bootstrap.js" async></script>
+
+  <!-- Google Maps API Integration -->
+  <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBPN4hKbBvu7FMXs6q9bxQdRqMbnairj9g&callback=initMap&libraries=places" async defer></script>
+
+  <script>
+    function initMap() {
+      console.log("Google Maps API loaded successfully.");
+      // Initialize map logic here (optional)
+    }
+  </script>
 </body>
 </html>

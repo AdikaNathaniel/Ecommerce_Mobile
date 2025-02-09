@@ -1,5 +1,13 @@
 {
   "devDependencies": {
     "concurrently": "^9.1.2"
+  },
+  "packageManager": "pnpm@9.15.1+sha512.1acb565e6193efbebda772702950469150cf12bcc764262e7587e71d19dc98a423dff9536e57ea44c49bdf790ff694e83c27be5faa23d67e0c033b583be4bfcf",
+  "dependencies": {
+    "@nestjs/platform-socket.io": "^11.0.8",
+    "@nestjs/websockets": "^11.0.8",
+    "mongoose": "^8.10.0",
+    "socket.io": "^2.5.1",
+    "socket.io-client": "^2.5.0"
   }
 }

@@ -14,7 +14,7 @@ export class Delivery {
 //   @Prop({ required: true })
 //   sellerId: string;
 
-  @Prop({ required: true, enum: ['Pending', 'Out for Delivery', 'Delivered', 'Cancelled'], default: 'Pending' })
+  @Prop({ required: true, enum: ['Pending', 'In Transit', 'Delivered', 'Cancelled'], default: 'Pending' })
   status: string;
 
   @Prop()
