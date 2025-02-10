@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'add_product.dart'; // Import your AddProductPage
 import 'main.dart'; // Import your LoginPage
 import 'delete_product.dart'; // Import the DeleteProductPage
+import 'update_product.dart'; // Corrected the missing semicolon
 
 class DeliveryManagementPage extends StatefulWidget {
   final String userEmail;
@@ -344,6 +345,21 @@ class _DeliveryManagementPageState extends State<DeliveryManagementPage> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => DeleteProductPage(
+                      userEmail: widget.userEmail, // Pass the actual email
+                      userPassword: widget.userPassword, // Pass the actual password
+                    ),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.edit),
+              title: Text('Update Product'), // Added Update Product option
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => UpdateProductPage(
                       userEmail: widget.userEmail, // Pass the actual email
                       userPassword: widget.userPassword, // Pass the actual password
                     ),
