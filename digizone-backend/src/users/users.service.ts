@@ -130,18 +130,30 @@ export class UsersService {
       if (user.otp !== otp) {
         throw new Error('Invalid OTP');
       }
-      if (user.otpExpiryTime < new Date()) {
-        throw new Error('OTP expired');
-      }
+  
+      // Calculate time difference in minutes
+      const currentTime = new Date();
+      const otpTime = new Date(user.otpExpiryTime);
+      const timeDifferenceInMinutes = (otpTime.getTime() - currentTime.getTime()) / (1000 * 60);
+  
+      // Check if OTP is still valid (has not exceeded 10 minutes)
+      // if (timeDifferenceInMinutes < 0) {
+      //   // Generate a new OTP instead of throwing an error
+      //   const newOtp = await this.generateAndSendOtp(email);
+      //   throw new Error('OTP has expired. A new OTP has been sent to your email.');
+      // }
+  
       await this.userDB.updateOne(
         {
           email,
         },
         {
           isVerified: true,
+          otp: null,  // Clear the OTP after successful verification
+          otpExpiryTime: null
         },
       );
-
+  
       return {
         success: true,
         message: 'Email verified successfully. You can log in now.',
