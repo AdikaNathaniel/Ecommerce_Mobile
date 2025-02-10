@@ -20,6 +20,7 @@ dependencies:
   geolocator: ^10.1.0  # Added for real-time GPS tracking
   geocoding: ^3.0.0  # Added for converting coordinates to addresses
   provider: ^6.1.2  # Added for state management
+  flutter_otp_text_field: ^1.4.0+2
 
 dev_dependencies:
   flutter_test:

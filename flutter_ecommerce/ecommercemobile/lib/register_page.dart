@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'otp_page.dart'; // Import the OTP verification page
 
 class RegisterPage extends StatefulWidget {
   @override
@@ -45,9 +46,8 @@ class _RegisterPageState extends State<RegisterPage> {
 
       final responseData = json.decode(response.body);
 
-      if (response.statusCode == 200 && responseData['success']) {
-        _showSuccess("Registration successful");
-        Navigator.pop(context);
+      if (response.statusCode == 201 && responseData['success']) {
+        _showSuccess("Registration successful", email); // Pass email to success dialog
       } else {
         _showError(responseData['message'] ?? "Something went wrong.");
       }
@@ -65,13 +65,19 @@ class _RegisterPageState extends State<RegisterPage> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('Error'),
+        title: Center(child: Text('Error')),
         content: Text(message),
         actions: <Widget>[
           TextButton(
             child: Text('OK'),
             onPressed: () {
-              Navigator.of(ctx).pop();
+            Navigator.of(ctx).pop();
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => RegisterPage(), // Navigate to OTP page
+                ),
+              );
             },
           ),
         ],
@@ -79,19 +85,24 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  // Show success messages in dialog
-  void _showSuccess(String message) {
+  // Show success messages in dialog and navigate to OTP page
+  void _showSuccess(String message, String email) {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: Text('Success'),
+        title: Center(child: Text('You are a registered DigiGamer!')),
         content: Text(message),
         actions: <Widget>[
           TextButton(
             child: Text('OK'),
             onPressed: () {
               Navigator.of(ctx).pop();
-              Navigator.pop(context);
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => OTPVerificationPage(email: email), // Navigate to OTP page
+                ),
+              );
             },
           ),
         ],
