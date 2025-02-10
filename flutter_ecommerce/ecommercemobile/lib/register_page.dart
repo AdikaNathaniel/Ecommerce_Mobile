@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:flutter/services.dart'; // Import for rootBundle
+import 'dart:html' as html; // Import for web download
 import 'otp_page.dart'; // Import the OTP verification page
 
 class RegisterPage extends StatefulWidget {
@@ -9,9 +11,9 @@ class RegisterPage extends StatefulWidget {
 }
 
 class _RegisterPageState extends State<RegisterPage> {
-  final _nameController = TextEditingController(text: "NathanielAdika24");
-  final _emailController = TextEditingController(text: "nathanieladikajnr200@gmail.com");
-  final _passwordController = TextEditingController(text: "999999999");
+  final _nameController = TextEditingController();
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
   final _typeController = TextEditingController(); // New controller for user type
   bool _isLoading = false;
 
@@ -71,13 +73,7 @@ class _RegisterPageState extends State<RegisterPage> {
           TextButton(
             child: Text('OK'),
             onPressed: () {
-            Navigator.of(ctx).pop();
-              Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => RegisterPage(), // Navigate to OTP page
-                ),
-              );
+              Navigator.of(ctx).pop();
             },
           ),
         ],
@@ -106,6 +102,31 @@ class _RegisterPageState extends State<RegisterPage> {
             },
           ),
         ],
+      ),
+    );
+  }
+
+  // Function to download the PDF
+  Future<void> _downloadPDF() async {
+    final ByteData bytes = await rootBundle.load('Gaming_Ecommerce_Terms.pdf');
+    final buffer = bytes.buffer.asUint8List();
+
+    // Create a blob and trigger a download
+    final blob = html.Blob([buffer], 'application/pdf');
+    final url = html.Url.createObjectUrlFromBlob(blob);
+    final anchor = html.AnchorElement(href: url)
+      ..setAttribute('download', 'Gaming_Ecommerce_Terms.pdf')
+      ..click();
+    html.Url.revokeObjectUrl(url); // Clean up the URL
+  }
+
+  // Show Snackbar for messages
+  void _showSnackbar(String message, Color color) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(message),
+        backgroundColor: color,
+        duration: Duration(seconds: 2),
       ),
     );
   }
@@ -243,6 +264,25 @@ class _RegisterPageState extends State<RegisterPage> {
                   },
                   child: Text(
                     "Login",
+                    style: TextStyle(
+                      color: Colors.blue,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            SizedBox(height: 20),
+
+            // Terms of Service and Privacy Policy
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Text("By clicking Register, you agree to "),
+                GestureDetector(
+                  onTap: _downloadPDF,
+                  child: Text(
+                    "our Terms of Service and Privacy Policy",
                     style: TextStyle(
                       color: Colors.blue,
                       fontWeight: FontWeight.bold,
