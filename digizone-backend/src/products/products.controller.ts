@@ -6,15 +6,14 @@ import {
   Patch,
   Param,
   Delete,
-  HttpCode,
   Query,
   UseInterceptors,
   UploadedFile,
-  Put,
   Req,
 } from '@nestjs/common';
 import { ProductsService } from './products.service';
 import { CreateProductDto } from './dto/create-product.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
 import { Roles } from 'src/shared/middleware/role.decorators';
 import { userTypes } from 'src/shared/schema/users';
 import { GetProductQueryDto } from './dto/get-product-query-dto';
@@ -26,10 +25,7 @@ import { ProductSkuDto, ProductSkuDtoArr } from './dto/product-sku.dto';
 export class ProductsController {
   constructor(private readonly productsService: ProductsService) {}
 
-  
   @Post()
-  // @HttpCode(201)
-  // @Roles(userTypes.ADMIN, userTypes.SELLER) // Allow both ADMIN and SELLER to create products
   async create(@Body() createProductDto: CreateProductDto) {
     return await this.productsService.createProduct(createProductDto);
   }
@@ -45,7 +41,7 @@ export class ProductsController {
   }
 
   @Patch(':id')
-  @Roles(userTypes.ADMIN, userTypes.SELLER) // Allow both ADMIN and SELLER to update products
+  @Roles(userTypes.ADMIN, userTypes.SELLER)
   async update(
     @Param('id') id: string,
     @Body() updateProductDto: CreateProductDto,
@@ -53,14 +49,13 @@ export class ProductsController {
     return await this.productsService.updateProduct(id, updateProductDto);
   }
 
-  @Delete(':id')
-  @Roles(userTypes.ADMIN, userTypes.SELLER) // Allow both ADMIN and SELLER to remove products
-  async remove(@Param('id') id: string) {
-    return await this.productsService.removeProduct(id);
+  @Delete('name/:productName')
+  removeByName(@Param('productName') productName: string) {
+    return this.productsService.removeProductByName(productName);
   }
 
   @Post('/:id/image')
-  @Roles(userTypes.ADMIN) // Restrict image upload to ADMIN only
+  @Roles(userTypes.ADMIN)
   @UseInterceptors(
     FileInterceptor('productImage', {
       dest: config.get('fileStoragePath'),
@@ -76,107 +71,101 @@ export class ProductsController {
     return await this.productsService.uploadProductImage(id, file);
   }
 
-  @Post('/:productId/skus')
-  @Roles(userTypes.ADMIN)
-  async updateProductSku(
-    @Param('productId') productId: string,
-    @Body() updateProductSkuDto: ProductSkuDtoArr,
+  @Post('update/:productName')
+  updateByName(
+    @Param('productName') productName: string,
+    @Body() updateProductDto: UpdateProductDto,
   ) {
-    return await this.productsService.updateProductSku(
-      productId,
-      updateProductSkuDto,
-    );
-  }
-
-  @Put('/:productId/skus/:skuId')
-  @Roles(userTypes.ADMIN)
-  async updateProductSkuById(
-    @Param('productId') productId: string,
-    @Param('skuId') skuId: string,
-    @Body() updateProductSkuDto: ProductSkuDto,
-  ) {
-    return await this.productsService.updateProductSkuById(
-      productId,
-      skuId,
-      updateProductSkuDto,
-    );
-  }
-
-  @Delete('/:productId/skus/:skuId')
-  @Roles(userTypes.ADMIN)
-  async deleteSkuById(
-    @Param('productId') productId: string,
-    @Param('skuId') skuId: string,
-  ) {
-    return await this.productsService.deleteProductSkuById(productId, skuId);
-  }
-
-  @Post('/:productId/skus/:skuId/licenses')
-  @Roles(userTypes.ADMIN)
-  async addProductSkuLicense(
-    @Param('productId') productId: string,
-    @Param('skuId') skuId: string,
-    @Body('licenseKey') licenseKey: string,
-  ) {
-    return await this.productsService.addProductSkuLicense(
-      productId,
-      skuId,
-      licenseKey,
-    );
-  }
-
-  @Delete('/licenses/:licenseKeyId')
-  @Roles(userTypes.ADMIN)
-  async removeProductSkuLicense(@Param('licenseKeyId') licenseId: string) {
-    return await this.productsService.removeProductSkuLicense(licenseId);
-  }
-
-  @Get('/:productId/skus/:skuId/licenses')
-  @Roles(userTypes.ADMIN)
-  async getProductSkuLicenses(
-    @Param('productId') productId: string,
-    @Param('skuId') skuId: string,
-  ) {
-    return await this.productsService.getProductSkuLicenses(productId, skuId);
-  }
-
-  @Put('/:productId/skus/:skuId/licenses/:licenseKeyId')
-  @Roles(userTypes.ADMIN)
-  async updateProductSkuLicense(
-    @Param('productId') productId: string,
-    @Param('skuId') skuId: string,
-    @Param('licenseKeyId') licenseKeyId: string,
-    @Body('licenseKey') licenseKey: string,
-  ) {
-    return await this.productsService.updateProductSkuLicense(
-      productId,
-      skuId,
-      licenseKeyId,
-      licenseKey,
-    );
-  }
-
-  @Post('/:productId/reviews')
-  @Roles(userTypes.CUSTOMER)
-  async addProductReview(
-    @Param('productId') productId: string,
-    @Body('rating') rating: number,
-    @Body('review') review: string,
-    @Req() req: any,
-  ) {
-    return await this.productsService.addProductReview(
-      productId,
-      rating,
-      review,
-      req.user,
-    );
-  }
-
-  @Delete('/:productId/reviews/:reviewId')
-  async removeProductReview(
-    @Param('productId') productId: string,
-    @Param('reviewId') reviewId: string,
-  ) {
-    return await this.productsService.removeProductReview(productId, reviewId);
+    return this.productsService.updateProductByName(productName, updateProductDto);
   }
 }
+
+  // @Post('/:productId/skus')
+  // @Roles(userTypes.ADMIN)
+  // async updateProductSku(
+  //   @Param('productId') productId: string,
+  //   @Body() updateProductSkuDto: ProductSkuDtoArr,
+  // ) {
+  //   return await this.productsService.updateProductSku(
+  //     productId,
+  //     updateProductSkuDto,
+  //   );
+  // }
+
+  // @Put('/:productId/skus/:skuId')
+  // @Roles(userTypes.ADMIN)
+  // async updateProductSkuById(
+  //   @Param('productId') productId: string,
+  //   @Param('skuId') skuId: string,
+  //   @Body() updateProductSkuDto: ProductSkuDto,
+  // ) {
+  //   return await this.productsService.updateProductSkuById(
+  //     productId,
+  //     skuId,
+  //     updateProductSkuDto,
+  //   );
+  // }
+
+  // @Post('/:productId/skus/:skuId/licenses')
+  // @Roles(userTypes.ADMIN)
+  // async addProductSkuLicense(
+  //   @Param('productId') productId: string,
+  //   @Param('skuId') skuId: string,
+  //   @Body('licenseKey') licenseKey: string,
+  // ) {
+  //   return await this.productsService.addProductSkuLicense(
+  //     productId,
+  //     skuId,
+  //     licenseKey,
+  //   );
+  // }
+
+  // @Get('/:productId/skus/:skuId/licenses')
+  // @Roles(userTypes.ADMIN)
+  // async getProductSkuLicenses(
+  //   @Param('productId') productId: string,
+  //   @Param('skuId') skuId: string,
+  // ) {
+  //   return await this.productsService.getProductSkuLicenses(productId, skuId);
+  // }
+
+  // @Put('/:productId/skus/:skuId/licenses/:licenseKeyId')
+  // @Roles(userTypes.ADMIN)
+  // async updateProductSkuLicense(
+  //   @Param('productId') productId: string,
+  //   @Param('skuId') skuId: string,
+  //   @Param('licenseKeyId') licenseKeyId: string,
+  //   @Body('licenseKey') licenseKey: string,
+  // ) {
+  //   return await this.productsService.updateProductSkuLicense(
+  //     productId,
+  //     skuId,
+  //     licenseKeyId,
+  //     licenseKey,
+  //   );
+  // }
+
+  // @Post('/:productId/reviews')
+  // @Roles(userTypes.CUSTOMER)
+  // async addProductReview(
+  //   @Param('productId') productId: string,
+  //   @Body('rating') rating: number,
+  //   @Body('review') review: string,
+  //   @Req() req: any,
+  // ) {
+  //   return await this.productsService.addProductReview(
+  //     productId,
+  //     rating,
+  //     review,
+  //     req.user,
+  //   );
+  // }
+
+  // @Delete('/:productId/reviews/:reviewId')
+  // async removeProductReview(
+  //   @Param('productId') productId: string,
+  //   @Param('reviewId') reviewId: string,
+  // ) {
+  //   return await this.productsService.removeProductReview(productId, reviewId);
+  // }
+// }

@@ -1,8 +1,9 @@
 import { BadRequestException, Inject, Injectable } from '@nestjs/common';
-import Stripe from 'stripe';
+// import Stripe from 'stripe'; // Commented out Stripe import
 import { ProductRepository } from 'src/shared/repositories/product.respository';
 import { Products } from 'src/shared/schema/products';
 import { CreateProductDto } from './dto/create-product.dto';
+import { UpdateProductDto } from './dto/update-product.dto';
 import { GetProductQueryDto } from './dto/get-product-query-dto';
 import qs2m from 'qs-to-mongo';
 import cloudinary from 'cloudinary';
@@ -16,7 +17,7 @@ export class ProductsService {
   constructor(
     @Inject(ProductRepository) private readonly productDB: ProductRepository,
     @Inject(OrdersRepository) private readonly orderDB: OrdersRepository,
-    @Inject('STRIPE_CLIENT') private readonly stripeClient: Stripe,
+    // @Inject('STRIPE_CLIENT') private readonly stripeClient: Stripe, // Commented out Stripe client
   ) {
     cloudinary.v2.config({
       cloud_name: config.get('cloudinary.cloud_name'),
@@ -54,32 +55,24 @@ export class ProductsService {
   async findAllProducts(query: GetProductQueryDto) {
     try {
       let callForHomePage = false;
-  
-      // Check if query.homepage is provided and set the flag
+
       if (query.homepage) {
         callForHomePage = true;
       }
-  
-      // Log the query to inspect its structure
+
       console.log('Received Query:', query);
-      
-      // Remove homepage from query if it's set, so it doesn't interfere with other filters
+
       delete query.homepage;
-  
-      // Convert query to criteria, options, and links using qs2m
+
       const { criteria, options, links } = qs2m(query);
-  
-      // Log the generated criteria and options to ensure correct transformation
+
       console.log('Converted Criteria:', criteria);
       console.log('Converted Options:', options);
-  
-      // Handle homepage-specific product fetching
+
       if (callForHomePage) {
         const products = await this.productDB.findProductWithGroupBy();
-        
-        // Log the result of the group-by query
         console.log('Products for Homepage:', products);
-  
+
         return {
           message:
             products.length > 0
@@ -89,13 +82,10 @@ export class ProductsService {
           success: true,
         };
       }
-  
-      // Fetch products with pagination and filtering
+
       const { totalProductCount, products } = await this.productDB.find(criteria, options);
-  
-      // Log the result of the paginated query
       console.log('Paginated Products:', products);
-  
+
       return {
         message:
           products.length > 0
@@ -116,12 +106,10 @@ export class ProductsService {
         success: true,
       };
     } catch (error) {
-      // Log the error for debugging
       console.error('Error fetching products:', error);
       throw error;
     }
   }
-  
 
   async findOneProduct(id: string): Promise<{
     message: string;
@@ -166,11 +154,11 @@ export class ProductsService {
         { _id: id },
         updateProductDto,
       );
-      if (!updateProductDto.stripeProductId)
-        await this.stripeClient.products.update(productExist.stripeProductId, {
-          name: updateProductDto.productName,
-          description: updateProductDto.description,
-        });
+      // if (!updateProductDto.stripeProductId)
+      //   await this.stripeClient.products.update(productExist.stripeProductId, {
+      //     name: updateProductDto.productName,
+      //     description: updateProductDto.description,
+      //   });
       return {
         message: 'Product updated successfully',
         result: updatedProduct,
@@ -181,18 +169,18 @@ export class ProductsService {
     }
   }
 
-  async removeProduct(id: string): Promise<{
+  async removeProductByName(productName: string): Promise<{
     message: string;
     success: boolean;
     result: null;
   }> {
     try {
-      const productExist = await this.productDB.findOne({ _id: id });
+      const productExist = await this.productDB.findOne({ productName });
       if (!productExist) {
         throw new Error('Product does not exist');
       }
-      await this.productDB.findOneAndDelete({ _id: id });
-      await this.stripeClient.products.del(productExist.stripeProductId);
+      await this.productDB.findOneAndDelete({ productName });
+      // await this.stripeClient.products.del(productExist.stripeProductId);
       return {
         message: 'Product deleted successfully',
         success: true,
@@ -243,9 +231,9 @@ export class ProductsService {
         },
       );
 
-      await this.stripeClient.products.update(product.stripeProductId, {
-        images: [resOfCloudinary.secure_url],
-      });
+      // await this.stripeClient.products.update(product.stripeProductId, {
+      //   images: [resOfCloudinary.secure_url],
+      // });
 
       return {
         message: 'Image uploaded successfully',
@@ -257,7 +245,6 @@ export class ProductsService {
     }
   }
 
-  // this is for create one or multiple sku for an product
   async updateProductSku(productId: string, data: ProductSkuDtoArr) {
     try {
       const product = await this.productDB.findOne({ _id: productId });
@@ -268,25 +255,25 @@ export class ProductsService {
       const skuCode = Math.random().toString(36).substring(2, 5) + Date.now();
       for (let i = 0; i < data.skuDetails.length; i++) {
         if (!data.skuDetails[i].stripePriceId) {
-          const stripPriceDetails = await this.stripeClient.prices.create({
-            unit_amount: data.skuDetails[i].price * 100,
-            currency: 'inr',
-            product: product.stripeProductId,
-            metadata: {
-              skuCode: skuCode,
-              lifetime: data.skuDetails[i].lifetime + '',
-              productId: productId,
-              price: data.skuDetails[i].price,
-              productName: product.productName,
-              productImage: product.image,
-            },
-          });
-          data.skuDetails[i].stripePriceId = stripPriceDetails.id;
+          // const stripPriceDetails = await this.stripeClient.prices.create({
+          //   unit_amount: data.skuDetails[i].price * 100,
+          //   currency: 'inr',
+          //   product: product.stripeProductId,
+          //   metadata: {
+          //     skuCode: skuCode,
+          //     lifetime: data.skuDetails[i].lifetime + '',
+          //     productId: productId,
+          //     price: data.skuDetails[i].price,
+          //     productName: product.productName,
+          //     productImage: product.image,
+          //   },
+          // });
+          // data.skuDetails[i].stripePriceId = stripPriceDetails.id;
         }
         data.skuDetails[i].skuCode = skuCode;
       }
 
-       const result = await this.productDB.findOneAndUpdate(
+      const result = await this.productDB.findOneAndUpdate(
         { _id: productId },
         { $push: { skuDetails: data.skuDetails } },
       );
@@ -294,7 +281,7 @@ export class ProductsService {
       return {
         message: 'Product sku updated successfully',
         success: true,
-        result
+        result,
       };
     } catch (error) {
       throw error;
@@ -318,21 +305,21 @@ export class ProductsService {
       }
 
       if (data.price !== sku.price) {
-        const priceDetails = await this.stripeClient.prices.create({
-          unit_amount: data.price * 100,
-          currency: 'inr',
-          product: product.stripeProductId,
-          metadata: {
-            skuCode: sku.skuCode,
-            lifetime: data.lifetime + '',
-            productId: productId,
-            price: data.price,
-            productName: product.productName,
-            productImage: product.image,
-          },
-        });
+        // const priceDetails = await this.stripeClient.prices.create({
+        //   unit_amount: data.price * 100,
+        //   currency: 'inr',
+        //   product: product.stripeProductId,
+        //   metadata: {
+        //     skuCode: sku.skuCode,
+        //     lifetime: data.lifetime + '',
+        //     productId: productId,
+        //     price: data.price,
+        //     productName: product.productName,
+        //     productImage: product.image,
+        //   },
+        // });
 
-        data.stripePriceId = priceDetails.id;
+        // data.stripePriceId = priceDetails.id;
       }
 
       const dataForUpdate = {};
@@ -351,34 +338,6 @@ export class ProductsService {
         message: 'Product sku updated successfully',
         success: true,
         result,
-      };
-    } catch (error) {
-      throw error;
-    }
-  }
-
-  async deleteProductSkuById(id: string, skuId: string) {
-    try {
-      const productDetails = await this.productDB.findOne({ _id: id });
-      const skuDetails = productDetails.skuDetails.find(
-        (sku) => sku._id.toString() === skuId,
-      );
-      await this.stripeClient.prices.update(skuDetails.stripePriceId, {
-        active: false,
-      });
-
-      // delete the sku details from product
-      await this.productDB.deleteSku(id, skuId);
-      // delete all the licences from db for that sku
-      // await this.productDB.deleteAllLicences(undefined, skuId);
-
-      return {
-        message: 'Product sku details deleted successfully',
-        success: true,
-        result: {
-          id,
-          skuId,
-        },
       };
     } catch (error) {
       throw error;
@@ -416,6 +375,53 @@ export class ProductsService {
       throw error;
     }
   }
+
+  async updateProductByName(
+    productName: string,
+    updateProductDto: UpdateProductDto,
+  ): Promise<{
+    message: string;
+    result: Products;
+    success: boolean;
+  }> {
+    try {
+      const productExist = await this.productDB.findOne({ productName });
+      if (!productExist) {
+        throw new Error('Product does not exist');
+      }
+  
+      // Create update data object with all properties
+      const updateData = {
+        productName: updateProductDto.productName,
+        description: updateProductDto.description,
+        image: updateProductDto.image,
+        category: updateProductDto.category,
+        platformType: updateProductDto.platformType,
+        baseType: updateProductDto.baseType,
+        productUrl: updateProductDto.productUrl,
+        downloadUrl: updateProductDto.downloadUrl,
+        avgRating: updateProductDto.avgRating,
+        // price: updateProductDto.price,
+        highlights: updateProductDto.highlights,
+        updatedAt: new Date()
+      };
+  
+      const updatedProduct = await this.productDB.findOneAndUpdate(
+        { productName },
+        { $set: updateData },
+        // { new: true } // This option returns the updated document
+      );
+  
+      return {
+        message: 'Product updated successfully',
+        result: updatedProduct,
+        success: true,
+      };
+    } catch (error) {
+      throw error;
+    }
+  }
+  
 
   async removeProductSkuLicense(id: string) {
     try {
@@ -500,21 +506,21 @@ export class ProductsService {
       if (!user?._id) {
         throw new BadRequestException('Invalid user data');
       }
-  
+
       const product = await this.productDB.findOne({ _id: productId });
       if (!product) {
         throw new Error('Product does not exist');
       }
-  
+
       // Initialize feedbackDetails if undefined
       if (!Array.isArray(product.feedbackDetails)) {
         product.feedbackDetails = [];
       }
-  
+
       const existingReview = product.feedbackDetails.find(
         (value) => value?.customerId === user._id.toString()
       );
-  
+
       if (existingReview) {
         throw new BadRequestException(
           'You have already given a review for this product'
