@@ -3,6 +3,7 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'add_product.dart'; // Import your AddProductPage
 import 'main.dart'; // Import your LoginPage
+import 'delete_product.dart'; // Import the DeleteProductPage
 
 class DeliveryManagementPage extends StatefulWidget {
   final String userEmail;
@@ -213,9 +214,9 @@ class _DeliveryManagementPageState extends State<DeliveryManagementPage> {
             Row(
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
-            Icon(Icons.email),
-            SizedBox(width: 10),
-            Text(email),
+                Icon(Icons.email),
+                SizedBox(width: 10),
+                Text(email),
               ],
             ),
             SizedBox(height: 10),
@@ -328,6 +329,21 @@ class _DeliveryManagementPageState extends State<DeliveryManagementPage> {
                   context,
                   MaterialPageRoute(
                     builder: (context) => AddProductPage(
+                      userEmail: widget.userEmail, // Pass the actual email
+                      userPassword: widget.userPassword, // Pass the actual password
+                    ),
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.delete),
+              title: Text('Delete Product'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => DeleteProductPage(
                       userEmail: widget.userEmail, // Pass the actual email
                       userPassword: widget.userPassword, // Pass the actual password
                     ),
