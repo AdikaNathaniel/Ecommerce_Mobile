@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http; // Importing http package
-import 'dart:convert'; // Importing convert package
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 import 'user_screen.dart'; // Import UserListScreen
 import 'main.dart'; // Import your LoginPage
+import 'chat_page.dart'; // Import ChatPage
+import 'chat_messages.dart'; // Import ChatMessagesPage
 
 class SummaryPage extends StatelessWidget {
   final int totalProducts;
@@ -68,7 +70,27 @@ class SummaryPage extends StatelessWidget {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => UserListScreen(userEmail: userEmail)), // Pass userEmail to UserListScreen
+                  MaterialPageRoute(builder: (context) => UserListScreen(userEmail: userEmail)),
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.chat),
+              title: Text('In the Mood To Chat?'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ChatPage(userEmail: userEmail)), // Use userEmail directly
+                );
+              },
+            ),
+            ListTile(
+              leading: Icon(Icons.chat),
+              title: Text('View Your Messages'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ChatMessagesPage(userEmail: userEmail)), // Use userEmail directly
                 );
               },
             ),
@@ -168,7 +190,6 @@ class SummaryPage extends StatelessWidget {
     );
   }
 
-  // Show user info dialog
   void _showUserInfoDialog(BuildContext context) {
     String role = 'Admin'; // Hardcoded role
 
@@ -198,7 +219,6 @@ class SummaryPage extends StatelessWidget {
             SizedBox(height: 10),
             TextButton(
               onPressed: () async {
-                // Call logout API
                 final response = await http.put(
                   Uri.parse('http://localhost:3100/api/v1/users/logout'),
                   headers: {'Content-Type': 'application/json'},

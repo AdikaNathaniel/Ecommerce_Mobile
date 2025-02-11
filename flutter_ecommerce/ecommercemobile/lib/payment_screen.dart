@@ -16,6 +16,7 @@ class PaymentScreen extends StatefulWidget {
 class _PaymentScreenState extends State<PaymentScreen> {
   String paymentStatus = 'Pending'; // Initial payment status
   bool isPaymentSuccessful = false; // Flag to control dialog display
+  bool isProcessingPayment = false; // Flag to manage button state
 
   @override
   Widget build(BuildContext context) {
@@ -105,7 +106,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
                 children: [
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: _handlePayment,
+                      onPressed: isProcessingPayment ? null : _handlePayment, // Disable button if processing
                       child: Text(
                         'Complete Payment',
                         style: TextStyle(fontSize: 16),
@@ -149,6 +150,7 @@ class _PaymentScreenState extends State<PaymentScreen> {
     try {
       setState(() {
         paymentStatus = 'Pending'; // Set status to pending when starting payment
+        isProcessingPayment = true; // Set the processing flag
       });
 
       // Create payment method params
@@ -186,6 +188,10 @@ class _PaymentScreenState extends State<PaymentScreen> {
           backgroundColor: Colors.red,
         ),
       );
+    } finally {
+      setState(() {
+        isProcessingPayment = false; // Reset the processing flag
+      });
     }
   }
 

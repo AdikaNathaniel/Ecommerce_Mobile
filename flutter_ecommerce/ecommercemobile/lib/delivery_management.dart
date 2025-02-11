@@ -5,6 +5,8 @@ import 'add_product.dart'; // Import your AddProductPage
 import 'main.dart'; // Import your LoginPage
 import 'delete_product.dart'; // Import the DeleteProductPage
 import 'update_product.dart'; // Corrected the missing semicolon
+import 'chat_page.dart'; // Import ChatPage
+import 'chat_messages.dart'; // Import ChatMessagesPage
 
 class DeliveryManagementPage extends StatefulWidget {
   final String userEmail;
@@ -364,6 +366,26 @@ class _DeliveryManagementPageState extends State<DeliveryManagementPage> {
                       userPassword: widget.userPassword, // Pass the actual password
                     ),
                   ),
+                );
+              },
+            ),
+               ListTile(
+              leading: Icon(Icons.chat),
+              title: Text('In the Mood To Chat?'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ChatPage(userEmail: widget.userEmail)),
+                );
+              },
+            ),
+             ListTile(
+              leading: Icon(Icons.chat),
+              title: Text('View Your Messages'),
+              onTap: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (context) => ChatMessagesPage(userEmail: widget.userEmail)),
                 );
               },
             ),

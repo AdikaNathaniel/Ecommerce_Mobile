@@ -5,6 +5,7 @@ import { AppService } from './app.service';
 import { CartModule } from './cart/cart.module'; // Import CartModule here
 import config from 'config';
 import { UsersModule } from './users/users.module';
+// import { ElasticsearchConfigModule } from './products/elastic.module';
 import { ProductsModule } from './products/products.module';
 import { OrderModule } from './orders/orders.module';
 import { PaymentsModule } from './payments/payments.module';
@@ -33,6 +34,7 @@ import { NotificationModule } from 'src/notification/notification.module'; // Ad
     }),
     UsersModule,
     ProductsModule,
+    // ElasticsearchConfigModule,
     OrderModule,
     CartModule,
     PaymentsModule,
