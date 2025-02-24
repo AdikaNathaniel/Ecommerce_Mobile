@@ -1,6 +1,6 @@
 # 📱 Digizone - Multi-Vendor Mobile Platform
 
-Welcome to **Digizone**, a mobile-based multi-vendor platform developed using **Flutter**. This app allows  **Sellers** to add,remove and edit products,**Users** to search,add products to cart and place orders, and receive notifications for key activities as well as enabling **Administrators** track activity on DigiZone. The platform integrates with existing backend microservices for authentication, product management, order processing, and notifications.
+Welcome to **Digizone**, a mobile-based multi-vendor platform developed using **Flutter**. This app allows  **Sellers** to add,remove and edit products,**Customers** to search,add products to cart and place orders, and receive notifications for key activities as well as enabling **Administrators** track activity on DigiZone. The platform integrates with existing backend microservices for authentication, product management, order processing, and notifications.
 
 ---
 
